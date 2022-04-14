@@ -1,16 +1,10 @@
 version: "3.8"
 
 services:
-  db:
-    image: postgres:14.0-alpine
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=gateway_service
-    volumes:
-      - "bequest-db:/var/lib/postgresql/data"
+  mongo:
+    image: mvertes/alpine-mongo
     ports:
-      - "5432:5432"
+      - "27017:27017"
 
 volumes:
   bequest-db:
