@@ -41,10 +41,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewDBStorage(t *testing.T) {
-	_, err := NewDBStorage(context.Background(), &config.Config{})
+	_, err := NewDBStorage(context.Background(), &config.MongoConfig{})
 	require.Error(t, err)
 
-	_, err = NewDBStorage(context.Background(), &config.Config{
+	_, err = NewDBStorage(context.Background(), &config.MongoConfig{
 		URI:          uri,
 		DatabaseName: "",
 		User:         "root",
