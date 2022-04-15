@@ -4,18 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal"
+	"github.com/patriciabonaldy/bequest_challenge/internal/config"
 )
 
 const eventCollectionName = "event"
 
-var ErrCollectionNotFound = errors.New("collection not found")
+var (
+	ErrIDIsEmpty          = errors.New("invalid ID")
+	ErrCollectionNotFound = errors.New("collection not found")
+)
 
 // Repository is a mongo EventRepository implementation.
 type Repository struct {
@@ -23,26 +27,15 @@ type Repository struct {
 	db           *mongo.Client
 }
 
-type Config struct {
-	URI             string
-	databaseName    string
-	User            string
-	Password        string
-	connectTimeout  time.Duration
-	minPoolSize     uint64
-	maxPoolSize     uint64
-	maxConnIdleTime time.Duration
-}
-
 // NewDBStorage initializes a mongo-based implementation of Storage.
-func NewDBStorage(ctx context.Context, cfg *Config) (*Repository, error) {
+func NewDBStorage(ctx context.Context, cfg *config.Config) (*Repository, error) {
 	client, err := mongo.NewClient(
 		options.Client().ApplyURI(cfg.URI).
 			SetAuth(options.Credential{Username: cfg.User, Password: cfg.Password}).
-			SetConnectTimeout(cfg.connectTimeout).
-			SetMaxConnIdleTime(cfg.maxConnIdleTime).
-			SetMinPoolSize(cfg.minPoolSize).
-			SetMaxPoolSize(cfg.maxPoolSize))
+			SetConnectTimeout(cfg.ConnectTimeout).
+			SetMaxConnIdleTime(cfg.MaxConnIdleTime).
+			SetMinPoolSize(cfg.MinPoolSize).
+			SetMaxPoolSize(cfg.MaxPoolSize))
 	if err != nil {
 		return nil, err
 	}
@@ -56,19 +49,21 @@ func NewDBStorage(ctx context.Context, cfg *Config) (*Repository, error) {
 	}
 
 	return &Repository{
-		databaseName: cfg.databaseName,
+		databaseName: cfg.DatabaseName,
 		db:           client,
 	}, nil
 }
 
 func (r *Repository) GetByID(ctx context.Context, answerID string) (*internal.Answer, error) {
-	collection := r.getCollection(eventCollectionName)
-	if collection == nil {
-		return nil, ErrCollectionNotFound
+	objectID, err := primitive.ObjectIDFromHex(answerID)
+	if err != nil {
+		return nil, err
 	}
 
 	var result internal.Answer
-	err := collection.FindOne(ctx, bson.D{{"_id", answerID}}, nil).Decode(&result)
+	err = r.getCollection(eventCollectionName).FindOne(ctx, bson.M{
+		"_id": objectID,
+	}).Decode(&result)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return &internal.Answer{}, nil
@@ -80,29 +75,29 @@ func (r *Repository) GetByID(ctx context.Context, answerID string) (*internal.An
 	return &result, nil
 }
 
-func (r *Repository) Save(ctx context.Context, answer internal.Answer) error {
-	collection := r.getCollection(eventCollectionName)
-	if collection == nil {
-		return ErrCollectionNotFound
-	}
-
-	_, err := collection.InsertOne(ctx, answer, &options.InsertOneOptions{})
+func (r *Repository) Save(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
+	result, err := r.getCollection(eventCollectionName).InsertOne(ctx, answer)
 	if err != nil {
-		return err
+		return internal.Answer{}, err
 	}
 
-	return nil
+	answer.AnswerID = result.InsertedID.(primitive.ObjectID)
+
+	return answer, nil
 }
 
 func (r *Repository) Update(ctx context.Context, answer internal.Answer) error {
-	collection := r.getCollection(eventCollectionName)
-	if collection == nil {
-		return ErrCollectionNotFound
+	if answer.AnswerID.IsZero() {
+		return ErrIDIsEmpty
 	}
 
 	opts := options.Replace().SetUpsert(true)
-	filter := bson.D{{"_id", answer.ID}}
-	result, err := collection.ReplaceOne(ctx, filter, answer, opts)
+	filter := bson.D{{
+		Key:   "_id",
+		Value: answer.AnswerID,
+	}}
+	result, err := r.getCollection(eventCollectionName).
+		ReplaceOne(ctx, filter, answer, opts)
 	if err != nil {
 		return err
 	}
