@@ -2,66 +2,67 @@ package internal
 
 import (
 	"context"
+	"github.com/google/uuid"
 	"time"
-
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"gopkg.in/mgo.v2/bson"
 )
 
 type Storage interface {
-	GetByID(ctx context.Context, ID string) (*Answer, error)
-	Save(ctx context.Context, answer Answer) error
-	Update(ctx context.Context, answer Answer) error
+	GetByID(ctx context.Context, ID string) (Answer, error)
+	Save(ctx context.Context, answer Answer) (Answer, error)
+	Update(ctx context.Context, answer Answer) (Answer, error)
 }
 
 //go:generate mockery --case=snake --outpkg=storagemocks --output=platform/storage/storagemocks --name=Storage
 
+type EventType string
+
+var (
+	Create EventType = "create"
+	Update EventType = "update"
+	Delete EventType = "delete"
+)
+
 // Answer is a structure of answers to be stored
 type Answer struct {
-	AnswerID primitive.ObjectID  `json:"id" bson:"_id,omitempty"`
-	Events   []Event             `bson:"events,omitempty"`
-	CreateAt primitive.Timestamp `json:"createdAt" bson:"createdAt,omitempty"`
-	UpdateAt primitive.Timestamp `json:"updatedAt" bson:"updatedAt,omitempty"`
+	ID       string
+	Events   []Event
+	CreateAt time.Time
+	UpdateAt time.Time
 }
 
 // Event is a structure of events to be stored
 type Event struct {
-	EventID   primitive.ObjectID  `json:"id" bson:"_id,omitempty"`
-	Type      string              `bson:"event_type"`
-	RawData   bson.Raw            `bson:"data,omitempty"`
-	Timestamp primitive.Timestamp `timestamp:"createdAt" bson:"timestamp"`
-	Version   int                 `bson:"version"`
+	EventID   string
+	Type      EventType
+	RawData   []byte
+	Timestamp time.Time
+	Version   int
 }
 
-func NewEvent(eventType string, data []byte, version int) (Event, error) {
-	createdAt := primitive.Timestamp{
-		T: uint32(time.Now().Unix()),
+func NewAnswer(event Event) Answer {
+	return Answer{
+		Events:   []Event{event},
+		CreateAt: time.Now(),
+		UpdateAt: time.Now(),
+	}
+}
+
+func NewEvent(eventID string, eventType EventType, data []byte) Event {
+	if eventID == "" {
+		id, _ := uuid.NewUUID()
+		eventID = id.String()
 	}
 
 	return Event{
+		EventID:   eventID,
 		Type:      eventType,
-		RawData:   bson.Raw{Kind: data[0], Data: data},
-		Timestamp: createdAt,
-		Version:   version,
-	}, nil
+		RawData:   data,
+		Timestamp: time.Now(),
+	}
 }
 
-func (c *Event) ID() string {
-	return c.EventID.String()
-}
-
-func (c *Event) Name() string {
-	return c.Type
-}
-
-func (c *Event) At() time.Time {
-	return time.Unix(int64(c.Timestamp.T)/1000, int64(c.Timestamp.T)%1000*1000000)
-}
-
-func (c *Event) Data() []byte {
-	return c.RawData.Data
-}
-
-func (c *Event) Unmarshall(out interface{}) error {
-	return c.RawData.Unmarshal(out)
+func (a *Answer) AddEvent(event Event) {
+	log := len(a.Events)
+	event.Version = log + 1
+	a.Events = append(a.Events, event)
 }

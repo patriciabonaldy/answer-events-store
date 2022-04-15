@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/server/handler"
 	"log"
 	"net/http"
 	"os"
@@ -12,7 +13,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal/config"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/server/handler/health"
 )
 
 type Server struct {
@@ -35,7 +35,7 @@ func New(ctx context.Context, config *config.Config) (context.Context, Server) {
 }
 
 func (s *Server) registerRoutes() {
-	s.engine.GET("/health", health.CheckHandler())
+	s.engine.GET("/health", handler.CheckHandler())
 }
 
 func (s *Server) Run(ctx context.Context) error {

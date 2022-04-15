@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"testing"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -59,26 +59,14 @@ func TestRepository_Save(t *testing.T) {
 		db:           db,
 	}
 
-	createdAt := primitive.Timestamp{
-		T: uint32(time.Now().Unix()),
-	}
-	ev1, err := internal.NewEvent("create", []byte("{}"), 0)
-	require.NoError(t, err)
-	answer := internal.Answer{
-		CreateAt: createdAt,
-		Events:   []internal.Event{ev1},
-	}
-
+	answer := mockAnswer()
 	ctx := context.Background()
-	answer, err = repo.Save(ctx, answer)
+	got, err := repo.Save(ctx, answer)
 	assert.NoError(t, err)
 
-	got, err := repo.GetByID(ctx, answer.AnswerID.Hex())
+	want, err := repo.GetByID(ctx, got.ID)
 	assert.NoError(t, err)
-
-	assert.Equal(t, &answer, got)
-
-	fmt.Println(got)
+	assert.Equal(t, reflect.DeepEqual(want, got), true)
 }
 
 func TestRepository_Update(t *testing.T) {
@@ -97,7 +85,7 @@ func TestRepository_Update(t *testing.T) {
 		{
 			name: "error ID is empty",
 			fn: func() internal.Answer {
-				return mockAnswer(t)
+				return mockAnswer()
 			},
 			wantErr:     true,
 			expectedErr: ErrIDIsEmpty,
@@ -105,10 +93,10 @@ func TestRepository_Update(t *testing.T) {
 		{
 			name: "success",
 			fn: func() internal.Answer {
-				answer, err := repo.Save(ctx, mockAnswer(t))
+				answer, err := repo.Save(ctx, mockAnswer())
 				require.NoError(t, err)
 
-				answer.Events = append(answer.Events, mockEvent(t))
+				answer.Events = append(answer.Events, mockEvent("update"))
 				return answer
 			},
 		},
@@ -117,38 +105,36 @@ func TestRepository_Update(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			answer := tt.fn()
-			err := repo.Update(ctx, answer)
+			answer, err := repo.Update(ctx, answer)
 			assert.Equal(t, tt.expectedErr, err)
 
 			if !tt.wantErr {
-				got, err := repo.GetByID(ctx, answer.AnswerID.Hex())
+				got, err := repo.GetByID(ctx, answer.ID)
 				require.NoError(t, err)
 
-				assert.Equal(t, &answer, got)
+				assert.Equal(t, answer, got)
 			}
 		})
 	}
 }
 
-func mockAnswer(t *testing.T) internal.Answer {
-	createdAt := primitive.Timestamp{
-		T: uint32(time.Now().Unix()),
-	}
+func mockAnswer() internal.Answer {
+	ev1 := internal.NewEvent("", internal.Create, []byte("{}"))
+	answer := internal.NewAnswer(ev1)
 
-	answer := internal.Answer{
-		CreateAt: createdAt,
-		Events: []internal.Event{
-			mockEvent(t),
-		},
-	}
 	return answer
 }
 
-func mockEvent(t *testing.T) internal.Event {
-	ev, err := internal.NewEvent("create", []byte("{}"), 0)
+func mockEvent(event string) internal.Event {
+	return internal.NewEvent("", internal.EventType(event), []byte("{}"))
+}
+
+func mockEventDB(t *testing.T) EventDB {
+	id, _ := uuid.NewUUID()
+	evn, err := NewEvent(id.String(), "create", []byte("{}"), 0)
 	require.NoError(t, err)
 
-	return ev
+	return evn
 }
 
 func mongoContainer() (*dockertest.Pool, *dockertest.Resource) {

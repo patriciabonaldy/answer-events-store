@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/config"
@@ -51,52 +51,64 @@ func NewDBStorage(ctx context.Context, cfg *config.MongoConfig) (*Repository, er
 	}, nil
 }
 
-func (r *Repository) GetByID(ctx context.Context, answerID string) (*internal.Answer, error) {
+func (r *Repository) GetByID(ctx context.Context, answerID string) (internal.Answer, error) {
 	objectID, err := primitive.ObjectIDFromHex(answerID)
-	if err != nil {
-		return nil, err
-	}
-
-	var result internal.Answer
-	err = r.getCollection(eventCollectionName).FindOne(ctx, bson.M{
-		"_id": objectID,
-	}).Decode(&result)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			return &internal.Answer{}, nil
-		}
-
-		return nil, err
-	}
-
-	return &result, nil
-}
-
-func (r *Repository) Save(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
-	result, err := r.getCollection(eventCollectionName).InsertOne(ctx, answer)
 	if err != nil {
 		return internal.Answer{}, err
 	}
 
-	answer.AnswerID = result.InsertedID.(primitive.ObjectID)
+	var result AnswerDB
+	err = r.getCollection(eventCollectionName).FindOne(ctx, bson.M{
+		"_id": objectID,
+	}).Decode(&result)
+	if err != nil {
+		return internal.Answer{}, err
+	}
 
-	return answer, nil
+	return parseToBusinessAnswer(result), nil
 }
 
-func (r *Repository) Update(ctx context.Context, answer internal.Answer) error {
-	if answer.AnswerID.IsZero() {
-		return ErrIDIsEmpty
+func (r *Repository) Save(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
+	answerDB, err := parseToAnswerDB(answer)
+	if err != nil {
+		return internal.Answer{}, err
+	}
+
+	result, err := r.getCollection(eventCollectionName).InsertOne(ctx, answerDB)
+	if err != nil {
+		return internal.Answer{}, err
+	}
+
+	id := result.InsertedID.(primitive.ObjectID)
+
+	return r.GetByID(ctx, id.Hex())
+}
+
+func (r *Repository) Update(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
+	if len(answer.ID) == 0 {
+		return internal.Answer{}, ErrIDIsEmpty
+	}
+
+	if _, err := r.GetByID(ctx, answer.ID); err != nil {
+		return internal.Answer{}, err
 	}
 
 	opts := options.Replace().SetUpsert(true)
-	filter := bson.D{{
-		Key:   "_id",
-		Value: answer.AnswerID,
-	}}
-	result, err := r.getCollection(eventCollectionName).
-		ReplaceOne(ctx, filter, answer, opts)
+	objectID, err := primitive.ObjectIDFromHex(answer.ID)
 	if err != nil {
-		return err
+		return internal.Answer{}, err
+	}
+
+	filter := bson.M{"_id": objectID}
+	answerDB, err := parseToAnswerDB(answer)
+	if err != nil {
+		return internal.Answer{}, err
+	}
+
+	result, err := r.getCollection(eventCollectionName).
+		ReplaceOne(ctx, filter, answerDB, opts)
+	if err != nil {
+		return internal.Answer{}, err
 	}
 
 	if result.MatchedCount != 0 {
@@ -106,7 +118,7 @@ func (r *Repository) Update(ctx context.Context, answer internal.Answer) error {
 		fmt.Printf("inserted a new document with ID %v\n", result.UpsertedID)
 	}
 
-	return nil
+	return r.GetByID(ctx, answer.ID)
 }
 
 func (r *Repository) getCollection(collectionName string) *mongo.Collection {
