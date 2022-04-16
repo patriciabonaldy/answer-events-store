@@ -43,7 +43,6 @@ func NewAnswer(event Event) Answer {
 	return Answer{
 		Events:   []Event{event},
 		CreateAt: time.Now(),
-		UpdateAt: time.Now(),
 	}
 }
 
@@ -62,7 +61,6 @@ func NewEvent(eventID string, eventType EventType, data []byte) Event {
 }
 
 func (a *Answer) AddEvent(event Event) {
-	log := len(a.Events)
-	event.Version = log + 1
+	event.Version = len(a.Events)
 	a.Events = append(a.Events, event)
 }

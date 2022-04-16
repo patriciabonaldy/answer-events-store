@@ -95,8 +95,8 @@ func TestRepository_Update(t *testing.T) {
 			fn: func() internal.Answer {
 				answer, err := repo.Save(ctx, mockAnswer())
 				require.NoError(t, err)
-
 				answer.Events = append(answer.Events, mockEvent("update"))
+				answer.Events = append(answer.Events, mockEvent("delete"))
 				return answer
 			},
 		},

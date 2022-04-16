@@ -2,6 +2,7 @@ package business
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 
@@ -67,6 +68,7 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 
 	event := internal.NewEvent("", internal.EventType(eventType), data)
 	answer.AddEvent(event)
+	answer.UpdateAt = time.Now()
 	answer, err = s.repository.Update(ctx, answer)
 	if err != nil {
 		return err
