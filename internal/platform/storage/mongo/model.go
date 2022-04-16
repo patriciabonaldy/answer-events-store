@@ -11,25 +11,25 @@ import (
 
 // AnswerDB is a structure of answers to be stored
 type AnswerDB struct {
-	AnswerID primitive.ObjectID  `json:"id" bson:"_id,omitempty"`
-	Events   []EventDB           `bson:"events,omitempty"`
-	CreateAt primitive.Timestamp `json:"createdAt" bson:"createdAt,omitempty"`
-	UpdateAt primitive.Timestamp `json:"updatedAt" bson:"updatedAt,omitempty"`
+	AnswerID string              `bson:"answer_id"`
+	Events   []EventDB           `bson:"events"`
+	CreateAt primitive.Timestamp `bson:"createdAt,omitempty"`
+	UpdateAt primitive.Timestamp `bson:"updatedAt,omitempty"`
 }
 
 func (a *AnswerDB) createAt() time.Time {
-	return time.Unix(int64(a.UpdateAt.T)/1000, int64(a.UpdateAt.T)%1000*1000000)
+	return time.Unix(int64(a.CreateAt.T), 0).UTC()
 }
 
 func (a *AnswerDB) updateAt() time.Time {
-	return time.Unix(int64(a.UpdateAt.T)/1000, int64(a.UpdateAt.T)%1000*1000000)
+	return time.Unix(int64(a.UpdateAt.T), 0).UTC()
 }
 
 // EventDB is a structure of events to be stored
 type EventDB struct {
-	EventID   string              `json:"id" bson:"_id,omitempty"`
+	EventID   string              `bson:"event_id"`
 	Type      string              `bson:"event_type"`
-	RawData   bson.Raw            `bson:"data,omitempty"`
+	RawData   bson.Raw            `bson:"data"`
 	Timestamp primitive.Timestamp `timestamp:"createdAt" bson:"timestamp"`
 	Version   int                 `bson:"version"`
 }
@@ -57,7 +57,7 @@ func (c *EventDB) Name() string {
 }
 
 func (c *EventDB) At() time.Time {
-	return time.Unix(int64(c.Timestamp.T)/1000, int64(c.Timestamp.T)%1000*1000000)
+	return time.Unix(int64(c.Timestamp.T), 0).UTC()
 }
 
 func (c *EventDB) Data() []byte {
@@ -70,7 +70,7 @@ func (c *EventDB) Unmarshall(out interface{}) error {
 
 func parseToBusinessAnswer(result AnswerDB) internal.Answer {
 	answer := internal.Answer{
-		ID:       result.AnswerID.Hex(),
+		ID:       result.AnswerID,
 		CreateAt: result.createAt(),
 		UpdateAt: result.updateAt(),
 	}
@@ -83,24 +83,15 @@ func parseToBusinessAnswer(result AnswerDB) internal.Answer {
 	return answer
 }
 
-func parseToAnswerDB(result internal.Answer) (AnswerDB, error) {
+func parseToAnswerDB(result internal.Answer) AnswerDB {
 	answer := AnswerDB{
-		AnswerID: primitive.ObjectID{},
+		AnswerID: result.ID,
 		CreateAt: primitive.Timestamp{
 			T: uint32(result.CreateAt.Unix()),
 		},
 		UpdateAt: primitive.Timestamp{
 			T: uint32(result.UpdateAt.Unix()),
 		},
-	}
-
-	if result.ID != "" {
-		id, err := primitive.ObjectIDFromHex(result.ID)
-		if err != nil {
-			return answer, err
-		}
-
-		answer.AnswerID = id
 	}
 
 	for _, ev := range result.Events {
@@ -114,5 +105,5 @@ func parseToAnswerDB(result internal.Answer) (AnswerDB, error) {
 			Version: 0,
 		})
 	}
-	return answer, nil
+	return answer
 }

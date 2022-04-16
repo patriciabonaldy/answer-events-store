@@ -27,7 +27,7 @@ var (
 type Service interface {
 	CreateAnswer(ctx context.Context, data map[string]string) (*internal.Answer, error)
 	GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error)
-	UpdateAnswer(ctx context.Context, eventID, eventType string, data []byte) error
+	UpdateAnswer(ctx context.Context, eventID, eventType string, data map[string]string) error
 }
 
 type service struct {
@@ -53,7 +53,7 @@ func (s service) CreateAnswer(ctx context.Context, data map[string]string) (*int
 
 	event := internal.NewEvent("", internal.Create, body)
 	answer := internal.NewAnswer(event)
-	answer, err = s.repository.Save(ctx, answer)
+	err = s.repository.Save(ctx, answer)
 	if err != nil {
 		s.log.Errorf("error CreateAnswer %s", err.Error())
 		return nil, err
@@ -73,7 +73,7 @@ func (s service) GetAnswerByID(ctx context.Context, eventID string) (*internal.A
 }
 
 // UpdateAnswer implements Service interface.
-func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, data []byte) error {
+func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, data map[string]string) error {
 	answer, err := s.repository.GetByID(ctx, eventID)
 	if err != nil {
 		return err
@@ -84,10 +84,19 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 		return err
 	}
 
-	event := internal.NewEvent("", internal.EventType(eventType), data)
+	body := answer.Events[len(answer.Events)-1].RawData
+	if data != nil {
+		body, err = json.Marshal(data)
+		if err != nil {
+			s.log.Errorf("error Marshal data %s", err.Error())
+			return err
+		}
+	}
+
+	event := internal.NewEvent("", internal.EventType(eventType), body)
 	answer.AddEvent(event)
 	answer.UpdateAt = time.Now()
-	answer, err = s.repository.Update(ctx, answer)
+	err = s.repository.Update(ctx, answer)
 	if err != nil {
 		s.log.Errorf("error UpdateAnswer ID:%s:%s", err.Error())
 		return err

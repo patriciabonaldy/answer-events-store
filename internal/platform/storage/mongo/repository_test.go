@@ -63,7 +63,10 @@ func TestRepository_Save(t *testing.T) {
 
 	answer := mockAnswer()
 	ctx := context.Background()
-	got, err := repo.Save(ctx, answer)
+	err := repo.Save(ctx, answer)
+	assert.NoError(t, err)
+
+	got, err := repo.GetByID(ctx, answer.ID)
 	assert.NoError(t, err)
 
 	want, err := repo.GetByID(ctx, got.ID)
@@ -86,18 +89,12 @@ func TestRepository_Update(t *testing.T) {
 		expectedErr error
 	}{
 		{
-			name: "error ID is empty",
-			fn: func() internal.Answer {
-				return mockAnswer()
-			},
-			wantErr:     true,
-			expectedErr: internal.ErrIDIsEmpty,
-		},
-		{
 			name: "success",
 			fn: func() internal.Answer {
-				answer, err := repo.Save(ctx, mockAnswer())
+				answer := mockAnswer()
+				err := repo.Save(ctx, mockAnswer())
 				require.NoError(t, err)
+
 				answer.Events = append(answer.Events, mockEvent("update"))
 				answer.Events = append(answer.Events, mockEvent("delete"))
 				return answer
@@ -108,7 +105,7 @@ func TestRepository_Update(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
 			answer := tt.fn()
-			answer, err := repo.Update(ctx, answer)
+			err := repo.Update(ctx, answer)
 			assert.Equal(t, tt.expectedErr, err)
 
 			if !tt.wantErr {

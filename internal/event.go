@@ -9,8 +9,8 @@ import (
 
 type Storage interface {
 	GetByID(ctx context.Context, ID string) (Answer, error)
-	Save(ctx context.Context, answer Answer) (Answer, error)
-	Update(ctx context.Context, answer Answer) (Answer, error)
+	Save(ctx context.Context, answer Answer) error
+	Update(ctx context.Context, answer Answer) error
 }
 
 //go:generate mockery --case=snake --outpkg=storagemocks --output=platform/storage/storagemocks --name=Storage
@@ -28,7 +28,7 @@ var (
 	ErrInvalidData  = errors.New("data can not be empty")
 
 	ErrIDIsEmpty          = errors.New("invalid ID")
-	ErrCollectionNotFound = errors.New("collection not found")
+	ErrAnswerNotFound     = errors.New("id not found")
 	ErrInvalidEventStatus = errors.New("invalid event")
 )
 
@@ -50,7 +50,10 @@ type Event struct {
 }
 
 func NewAnswer(event Event) Answer {
+	id, _ := uuid.NewUUID()
+
 	return Answer{
+		ID:       id.String(),
 		Events:   []Event{event},
 		CreateAt: time.Now(),
 	}

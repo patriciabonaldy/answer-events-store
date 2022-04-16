@@ -36,43 +36,29 @@ func (_m *Storage) GetByID(ctx context.Context, ID string) (internal.Answer, err
 }
 
 // Save provides a mock function with given fields: ctx, answer
-func (_m *Storage) Save(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
+func (_m *Storage) Save(ctx context.Context, answer internal.Answer) error {
 	ret := _m.Called(ctx, answer)
 
-	var r0 internal.Answer
-	if rf, ok := ret.Get(0).(func(context.Context, internal.Answer) internal.Answer); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, internal.Answer) error); ok {
 		r0 = rf(ctx, answer)
 	} else {
-		r0 = ret.Get(0).(internal.Answer)
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, internal.Answer) error); ok {
-		r1 = rf(ctx, answer)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }
 
 // Update provides a mock function with given fields: ctx, answer
-func (_m *Storage) Update(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
+func (_m *Storage) Update(ctx context.Context, answer internal.Answer) error {
 	ret := _m.Called(ctx, answer)
 
-	var r0 internal.Answer
-	if rf, ok := ret.Get(0).(func(context.Context, internal.Answer) internal.Answer); ok {
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, internal.Answer) error); ok {
 		r0 = rf(ctx, answer)
 	} else {
-		r0 = ret.Get(0).(internal.Answer)
+		r0 = ret.Error(0)
 	}
 
-	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, internal.Answer) error); ok {
-		r1 = rf(ctx, answer)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
+	return r0
 }

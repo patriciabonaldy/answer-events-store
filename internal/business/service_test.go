@@ -16,7 +16,7 @@ func Test_service_CreateAnswer(t *testing.T) {
 	tests := []struct {
 		name    string
 		repo    func() internal.Storage
-		data    []byte
+		data    map[string]string
 		wantErr bool
 	}{
 		{
@@ -24,7 +24,7 @@ func Test_service_CreateAnswer(t *testing.T) {
 			repo: func() internal.Storage {
 				repoMock := new(storagemocks.Storage)
 				repoMock.On("Save", mock.Anything, mock.Anything).
-					Return(internal.Answer{}, errors.New("something unexpected happened"))
+					Return(errors.New("something unexpected happened"))
 
 				return repoMock
 
@@ -36,12 +36,14 @@ func Test_service_CreateAnswer(t *testing.T) {
 			repo: func() internal.Storage {
 				repoMock := new(storagemocks.Storage)
 				repoMock.On("Save", mock.Anything, mock.Anything).
-					Return(mockAnswer(), nil)
+					Return(nil)
 
 				return repoMock
 
 			},
-			data: []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 		},
 	}
 	for _, tt := range tests {
@@ -122,7 +124,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 		name      string
 		eventID   string
 		eventType string
-		data      []byte
+		data      map[string]string
 		repo      func() internal.Storage
 		wantErr   bool
 	}{
@@ -130,7 +132,9 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			name:      "error getting last event",
 			eventID:   "b47915e6-bd66-11ec-aaa8-acde48001122",
 			eventType: "update",
-			data:      []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 			repo: func() internal.Storage {
 				repoMock := new(storagemocks.Storage)
 				repoMock.On("GetByID", mock.Anything, mock.Anything).
@@ -145,7 +149,9 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			name:      "error invalid event state",
 			eventID:   "b47915e6-bd66-11ec-aaa8-acde48001122",
 			eventType: "create",
-			data:      []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -163,7 +169,9 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			name:      "error invalid event state",
 			eventID:   "b47915e6-bd66-11ec-aaa8-acde48001122",
 			eventType: "create",
-			data:      []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -181,7 +189,9 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			name:      "error update answers",
 			eventID:   "b47915e6-bd66-11ec-aaa8-acde48001122",
 			eventType: "delete",
-			data:      []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -202,7 +212,9 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			name:      "success",
 			eventID:   "b47915e6-bd66-11ec-aaa8-acde48001122",
 			eventType: "delete",
-			data:      []byte("{}"),
+			data: map[string]string{
+				"key": "9999",
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -222,7 +234,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.repo(), logger.New())
-			if err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
+			if _, err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

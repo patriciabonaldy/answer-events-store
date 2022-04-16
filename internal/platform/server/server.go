@@ -38,7 +38,15 @@ func New(ctx context.Context, config *config.Config, handler handler.AnswerHandl
 
 func (s *Server) registerRoutes() {
 	s.engine.GET("/health", handler.CheckHandler())
-	s.engine.POST("/answer", s.handler.Create())
+	answer := s.engine.Group("/answer")
+	{
+		answer.GET("/:id", s.handler.Get())
+		answer.GET("/:id/history", s.handler.GetHistory())
+		answer.POST("", s.handler.Create())
+		answer.PUT("/:id", s.handler.Update())
+		answer.DELETE("/:id", s.handler.Delete())
+	}
+
 }
 
 func (s *Server) Run(ctx context.Context) error {
