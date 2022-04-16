@@ -2,8 +2,7 @@ package mongo
 
 import (
 	"context"
-	"errors"
-	"fmt"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -16,19 +15,15 @@ import (
 
 const eventCollectionName = "event"
 
-var (
-	ErrIDIsEmpty          = errors.New("invalid ID")
-	ErrCollectionNotFound = errors.New("collection not found")
-)
-
 // Repository is a mongo EventRepository implementation.
 type Repository struct {
 	databaseName string
 	db           *mongo.Client
+	log          logger.Logger
 }
 
 // NewDBStorage initializes a mongo-based implementation of Storage.
-func NewDBStorage(ctx context.Context, cfg *config.MongoConfig) (*Repository, error) {
+func NewDBStorage(ctx context.Context, cfg *config.Database, log logger.Logger) (*Repository, error) {
 	client, err := mongo.NewClient(
 		options.Client().ApplyURI(cfg.URI).
 			SetAuth(options.Credential{Username: cfg.User,
@@ -48,6 +43,7 @@ func NewDBStorage(ctx context.Context, cfg *config.MongoConfig) (*Repository, er
 	return &Repository{
 		databaseName: cfg.DatabaseName,
 		db:           client,
+		log:          log,
 	}, nil
 }
 
@@ -86,7 +82,7 @@ func (r *Repository) Save(ctx context.Context, answer internal.Answer) (internal
 
 func (r *Repository) Update(ctx context.Context, answer internal.Answer) (internal.Answer, error) {
 	if len(answer.ID) == 0 {
-		return internal.Answer{}, ErrIDIsEmpty
+		return internal.Answer{}, internal.ErrIDIsEmpty
 	}
 
 	if _, err := r.GetByID(ctx, answer.ID); err != nil {
@@ -112,10 +108,10 @@ func (r *Repository) Update(ctx context.Context, answer internal.Answer) (intern
 	}
 
 	if result.MatchedCount != 0 {
-		fmt.Println("matched and replaced an existing document")
+		r.log.Info("matched and replaced an existing document")
 	}
 	if result.UpsertedCount != 0 {
-		fmt.Printf("inserted a new document with ID %v\n", result.UpsertedID)
+		r.log.Info("inserted a new document with ID %v\n", result.UpsertedID)
 	}
 
 	return r.GetByID(ctx, answer.ID)

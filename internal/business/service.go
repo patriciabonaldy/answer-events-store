@@ -2,16 +2,15 @@ package business
 
 import (
 	"context"
+	"encoding/json"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"time"
-
-	"github.com/pkg/errors"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 )
 
 var (
-	ErrInvalidEventStatus = errors.New("invalid event")
-	mapStatusValid        = map[internal.EventType]map[internal.EventType]interface{}{
+	mapStatusValid = map[internal.EventType]map[internal.EventType]interface{}{
 		internal.Create: {
 			internal.Delete: nil,
 			internal.Update: nil,
@@ -26,33 +25,51 @@ var (
 )
 
 type Service interface {
-	CreateAnswer(ctx context.Context, data []byte) error
-	GetAnswers(ctx context.Context, eventID string) (internal.Answer, error)
+	CreateAnswer(ctx context.Context, data map[string]string) (*internal.Answer, error)
+	GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error)
 	UpdateAnswer(ctx context.Context, eventID, eventType string, data []byte) error
 }
 
 type service struct {
 	repository internal.Storage
+	log        logger.Logger
 }
 
 // NewService returns the default Service interface implementation.
-func NewService(repository internal.Storage) Service {
+func NewService(repository internal.Storage, log logger.Logger) Service {
 	return &service{
 		repository: repository,
+		log:        log,
 	}
 }
 
 // CreateAnswer implements Service interface.
-func (s service) CreateAnswer(ctx context.Context, data []byte) error {
-	event := internal.NewEvent("", internal.Create, data)
-	answer := internal.NewAnswer(event)
-
-	_, err := s.repository.Save(ctx, answer)
+func (s service) CreateAnswer(ctx context.Context, data map[string]string) (*internal.Answer, error) {
+	body, err := json.Marshal(data)
 	if err != nil {
-		return err
+		s.log.Errorf("error Marshal data %s", err.Error())
+		return nil, err
 	}
 
-	return nil
+	event := internal.NewEvent("", internal.Create, body)
+	answer := internal.NewAnswer(event)
+	answer, err = s.repository.Save(ctx, answer)
+	if err != nil {
+		s.log.Errorf("error CreateAnswer %s", err.Error())
+		return nil, err
+	}
+
+	return &answer, nil
+}
+
+func (s service) GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error) {
+	answer, err := s.repository.GetByID(ctx, eventID)
+	if err != nil {
+		s.log.Errorf("error GetAnswerByID ID:%s:%s", eventID, err.Error())
+		return nil, err
+	}
+
+	return &answer, nil
 }
 
 // UpdateAnswer implements Service interface.
@@ -63,6 +80,7 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 	}
 
 	if err = s.checkEvent(answer, eventType); err != nil {
+		s.log.Errorf("error checkEvent ID:%s:%s", eventID, err.Error())
 		return err
 	}
 
@@ -71,19 +89,11 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 	answer.UpdateAt = time.Now()
 	answer, err = s.repository.Update(ctx, answer)
 	if err != nil {
+		s.log.Errorf("error UpdateAnswer ID:%s:%s", err.Error())
 		return err
 	}
 
 	return nil
-}
-
-func (s service) GetAnswers(ctx context.Context, eventID string) (internal.Answer, error) {
-	answer, err := s.repository.GetByID(ctx, eventID)
-	if err != nil {
-		return internal.Answer{}, err
-	}
-
-	return answer, nil
 }
 
 func (s service) checkEvent(answer internal.Answer, eventType string) error {
@@ -92,21 +102,21 @@ func (s service) checkEvent(answer internal.Answer, eventType string) error {
 	case internal.Create:
 		_, ok := mapStatusValid[internal.Create][internal.EventType(eventType)]
 		if !ok {
-			return ErrInvalidEventStatus
+			return internal.ErrInvalidEventStatus
 		}
 	case internal.Delete:
 		_, ok := mapStatusValid[internal.Delete][internal.EventType(eventType)]
 		if !ok {
-			return ErrInvalidEventStatus
+			return internal.ErrInvalidEventStatus
 		}
 	case internal.Update:
 		_, ok := mapStatusValid[internal.Update][internal.EventType(eventType)]
 		if !ok {
-			return ErrInvalidEventStatus
+			return internal.ErrInvalidEventStatus
 		}
 
 	default:
-		return ErrInvalidEventStatus
+		return internal.ErrInvalidEventStatus
 	}
 
 	return nil

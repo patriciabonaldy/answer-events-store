@@ -2,12 +2,19 @@ version: "3.8"
 
 services:
   mongo:
-    image: mvertes/alpine-mongo
+    image: mongo:latest
+    container_name: bequestDB
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: rootpassword
     ports:
       - "27017:27017"
-
+    volumes:
+      #- ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+      - mongodb_data_container:/data/db
 volumes:
-  bequest-db:
+  mongodb_data_container:
 
 networks:
   default:

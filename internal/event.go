@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -20,6 +21,15 @@ var (
 	Create EventType = "create"
 	Update EventType = "update"
 	Delete EventType = "delete"
+)
+
+var (
+	ErrInvalidEvent = errors.New("event can not be empty")
+	ErrInvalidData  = errors.New("data can not be empty")
+
+	ErrIDIsEmpty          = errors.New("invalid ID")
+	ErrCollectionNotFound = errors.New("collection not found")
+	ErrInvalidEventStatus = errors.New("invalid event")
 )
 
 // Answer is a structure of answers to be stored

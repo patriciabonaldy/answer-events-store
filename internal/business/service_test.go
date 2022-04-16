@@ -3,6 +3,7 @@ package business
 import (
 	"context"
 	"github.com/patriciabonaldy/bequest_challenge/internal"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/storagemocks"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
@@ -46,8 +47,8 @@ func Test_service_CreateAnswer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := tt.repo()
-			s := NewService(repo)
-			if err := s.CreateAnswer(context.Background(), tt.data); (err != nil) != tt.wantErr {
+			s := NewService(repo, logger.New())
+			if _, err := s.CreateAnswer(context.Background(), tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("CreateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -59,7 +60,7 @@ func Test_service_GetAnswers(t *testing.T) {
 		name    string
 		repo    func() internal.Storage
 		eventID string
-		want    func() internal.Answer
+		want    func() *internal.Answer
 		wantErr bool
 	}{
 		{
@@ -73,8 +74,8 @@ func Test_service_GetAnswers(t *testing.T) {
 
 			},
 			eventID: "b47915e6-bd66-11ec-aaa8-acde48001122",
-			want: func() internal.Answer {
-				return internal.Answer{}
+			want: func() *internal.Answer {
+				return nil
 			},
 			wantErr: true,
 		},
@@ -91,26 +92,26 @@ func Test_service_GetAnswers(t *testing.T) {
 
 			},
 			eventID: "b47915e6-bd66-11ec-aaa8-acde48001122",
-			want: func() internal.Answer {
+			want: func() *internal.Answer {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
 
-				return mockA
+				return &mockA
 			},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.repo())
-			got, err := s.GetAnswers(context.Background(), tt.eventID)
+			s := NewService(tt.repo(), logger.New())
+			got, err := s.GetAnswerByID(context.Background(), tt.eventID)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("GetAnswers() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("GetAnswerByID() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
 			want := tt.want()
 			if !reflect.DeepEqual(got, want) {
-				t.Errorf("GetAnswers() got = %v, want %v", got, want)
+				t.Errorf("GetAnswerByID() got = %v, want %v", got, want)
 			}
 		})
 	}
@@ -220,7 +221,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.repo())
+			s := NewService(tt.repo(), logger.New())
 			if err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}

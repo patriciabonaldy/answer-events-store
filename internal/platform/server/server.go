@@ -18,16 +18,18 @@ import (
 type Server struct {
 	httpAddr string
 	engine   *gin.Engine
+	handler  handler.AnswerHandler
 
 	shutdownTimeout time.Duration
 }
 
-func New(ctx context.Context, config *config.Config) (context.Context, Server) {
+func New(ctx context.Context, config *config.Config, handler handler.AnswerHandler) (context.Context, Server) {
 	srv := Server{
 		engine:   gin.New(),
 		httpAddr: fmt.Sprintf("%s:%d", config.Host, config.Port),
+		handler:  handler,
 
-		shutdownTimeout: config.ShutdownTimeout,
+		shutdownTimeout: time.Duration(config.ShutdownTimeout) + time.Second,
 	}
 
 	srv.registerRoutes()
@@ -36,6 +38,7 @@ func New(ctx context.Context, config *config.Config) (context.Context, Server) {
 
 func (s *Server) registerRoutes() {
 	s.engine.GET("/health", handler.CheckHandler())
+	s.engine.POST("/answer", s.handler.Create())
 }
 
 func (s *Server) Run(ctx context.Context) error {

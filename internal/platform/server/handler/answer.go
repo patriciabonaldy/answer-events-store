@@ -1,41 +1,81 @@
 package handler
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
+	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/business"
-	"github.com/pkg/errors"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"net/http"
 )
 
-type request struct {
-	ID    string `json:"id" binding:"required"`
-	Event string
-	Data  []byte
+type AnswerHandler struct {
+	service business.Service
+	log     logger.Logger
 }
 
-// AnswerHandler returns an HTTP handler for answer creation.
-func AnswerHandler(service business.Service) gin.HandlerFunc {
+func New(service business.Service, log logger.Logger) AnswerHandler {
+	return AnswerHandler{
+		service: service,
+		log:     log,
+	}
+}
+
+type createRequest struct {
+	Data map[string]string `json:"data" binding:"required"`
+}
+
+type createResponse struct {
+	ID      string            `json:"answer_id" binding:"required"`
+	EventID string            `json:"event_id" binding:"required"`
+	Event   string            `json:"event" binding:"required"`
+	Data    map[string]string `json:"data" binding:"required"`
+}
+
+// Create returns an HTTP handler for answer creation.
+func (a *AnswerHandler) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req request
+		var req createRequest
 		if err := ctx.BindJSON(&req); err != nil {
 			ctx.JSON(http.StatusBadRequest, err.Error())
 			return
 		}
 
-		err := service.CreateAnswer(ctx, req.Data)
-
+		ans, err := a.service.CreateAnswer(ctx, req.Data)
 		if err != nil {
-			switch {
-			case errors.Is(err, mooc.ErrInvalidCourseID),
-				errors.Is(err, mooc.ErrEmptyCourseName), errors.Is(err, mooc.ErrInvalidCourseID):
-				ctx.JSON(http.StatusBadRequest, err.Error())
-				return
-			default:
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
 		}
 
-		ctx.Status(http.StatusCreated)
+		resp, err := toCreateResponse(ans)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		ctx.JSON(http.StatusCreated, resp)
 	}
+}
+
+func toCreateResponse(answ *internal.Answer) (createResponse, error) {
+	ev := answ.Events[len(answ.Events)-1]
+	var data map[string]string
+
+	err := json.Unmarshal(ev.RawData, &data)
+	if err != nil {
+		return createResponse{}, err
+	}
+
+	return createResponse{
+		ID:      answ.ID,
+		EventID: ev.EventID,
+		Event:   string(ev.Type),
+		Data:    data,
+	}, nil
+}
+
+type request struct {
+	ID    string            `json:"id" binding:"required"`
+	Event string            `json:"event" binding:"required"`
+	Data  map[string]string `json:"data" binding:"required"`
 }

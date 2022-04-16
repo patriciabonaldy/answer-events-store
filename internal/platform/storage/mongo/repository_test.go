@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"fmt"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"log"
 	"os"
 	"reflect"
@@ -41,15 +42,16 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewDBStorage(t *testing.T) {
-	_, err := NewDBStorage(context.Background(), &config.MongoConfig{})
+	_, err := NewDBStorage(context.Background(), &config.Database{}, logger.New())
 	require.Error(t, err)
 
-	_, err = NewDBStorage(context.Background(), &config.MongoConfig{
+	_, err = NewDBStorage(context.Background(), &config.Database{
 		URI:          uri,
 		DatabaseName: "",
 		User:         "root",
 		Password:     "password",
-	})
+	},
+		logger.New())
 	require.NoError(t, err)
 }
 
@@ -73,6 +75,7 @@ func TestRepository_Update(t *testing.T) {
 	repo := &Repository{
 		databaseName: "test",
 		db:           db,
+		log:          logger.New(),
 	}
 
 	ctx := context.Background()
@@ -88,7 +91,7 @@ func TestRepository_Update(t *testing.T) {
 				return mockAnswer()
 			},
 			wantErr:     true,
-			expectedErr: ErrIDIsEmpty,
+			expectedErr: internal.ErrIDIsEmpty,
 		},
 		{
 			name: "success",
