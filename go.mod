@@ -6,6 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.3.0
 	github.com/ory/dockertest/v3 v3.8.1
+	github.com/patriciabonaldy/big_queue v0.1.8
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.1
 	github.com/swaggo/gin-swagger v1.4.2
@@ -51,10 +52,13 @@ require (
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
+	github.com/oklog/ulid/v2 v2.0.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/opencontainers/runc v1.0.2 // indirect
+	github.com/pierrec/lz4 v2.6.0+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/segmentio/kafka-go v0.4.25 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/ugorji/go/codec v1.1.7 // indirect

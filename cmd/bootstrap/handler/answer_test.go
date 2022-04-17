@@ -30,7 +30,7 @@ func TestHandler_Get(t *testing.T) {
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
 	log := logger.New()
-	svc := business.NewService(repositoryMock, log)
+	svc := business.NewService(nil, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -98,7 +98,7 @@ func TestHandler_GetHistory(t *testing.T) {
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
 	log := logger.New()
-	svc := business.NewService(repositoryMock, log)
+	svc := business.NewService(nil, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -186,7 +186,7 @@ func TestHandler_Create(t *testing.T) {
 	repositoryMock.On("Save", mock.Anything, mock.Anything).
 		Return(nil)
 	log := logger.New()
-	svc := business.NewService(repositoryMock, log)
+	svc := business.NewService(nil, repositoryMock, log)
 	handler := New(svc, log)
 
 	gin.SetMode(gin.TestMode)
@@ -290,7 +290,7 @@ func TestHandler_Update(t *testing.T) {
 	repositoryMock.On("Update", mock.Anything, mock.Anything).
 		Return(nil)
 	log := logger.New()
-	svc := business.NewService(repositoryMock, log)
+	svc := business.NewService(nil, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -402,7 +402,7 @@ func TestHandler_Delete(t *testing.T) {
 	repositoryMock.On("Update", mock.Anything, mock.Anything).
 		Return(nil)
 	log := logger.New()
-	svc := business.NewService(repositoryMock, log)
+	svc := business.NewService(nil, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()

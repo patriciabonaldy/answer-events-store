@@ -3,6 +3,8 @@ package bootstrap
 import (
 	"context"
 	"fmt"
+	handler2 "github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/docs"
 	"log"
 	"net/http"
 	"os"
@@ -12,22 +14,19 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
-	"github.com/patriciabonaldy/bequest_challenge/cmd/api/docs"
-
 	"github.com/gin-gonic/gin"
-	"github.com/patriciabonaldy/bequest_challenge/cmd/api/bootstrap/handler"
 	"github.com/patriciabonaldy/bequest_challenge/internal/config"
 )
 
 type Server struct {
 	httpAddr string
 	engine   *gin.Engine
-	handler  handler.AnswerHandler
+	handler  handler2.AnswerHandler
 
 	shutdownTimeout time.Duration
 }
 
-func New(ctx context.Context, config *config.Config, handler handler.AnswerHandler) (context.Context, Server) {
+func New(ctx context.Context, config *config.Config, handler handler2.AnswerHandler) (context.Context, Server) {
 	srv := Server{
 		engine:   gin.New(),
 		httpAddr: fmt.Sprintf("%s:%d", config.Host, config.Port),
@@ -58,7 +57,7 @@ func Middleware() gin.HandlerFunc {
 }
 func (s *Server) registerRoutes() {
 	s.engine.Use(Middleware())
-	s.engine.GET("/health", handler.CheckHandler())
+	s.engine.GET("/health", handler2.CheckHandler())
 	answer := s.engine.Group("/answers")
 	{
 		answer.GET("/:id", s.handler.GetAnswer())

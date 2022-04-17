@@ -14,11 +14,18 @@ type Database struct {
 	URI          string `json:"db_dsn"`
 }
 
+type Kafka struct {
+	Broker string `json:"broker"`
+	Topic  string `json:"topic"`
+	Host   string `json:"host"`
+}
+
 type Config struct {
 	Host            string    `json:"host"`
 	Port            int       `json:"port"`
 	ShutdownTimeout int       `json:"shutdown_timeout"`
 	Database        *Database `json:"database"`
+	Kafka           *Kafka    `json:"kafka"`
 }
 
 //go:embed tsconfig.json

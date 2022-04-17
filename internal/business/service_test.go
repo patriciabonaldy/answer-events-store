@@ -50,7 +50,7 @@ func Test_service_CreateAnswer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := tt.repo()
-			s := NewService(repo, logger.New())
+			s := NewService(nil, repo, logger.New())
 			if _, err := s.CreateAnswer(context.Background(), tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("CreateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -105,7 +105,7 @@ func Test_service_GetAnswers(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.repo(), logger.New())
+			s := NewService(nil, tt.repo(), logger.New())
 			got, err := s.GetAnswerByID(context.Background(), tt.eventID)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetAnswerByID() error = %v, wantErr %v", err, tt.wantErr)
@@ -234,7 +234,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(tt.repo(), logger.New())
+			s := NewService(nil, tt.repo(), logger.New())
 			if err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}

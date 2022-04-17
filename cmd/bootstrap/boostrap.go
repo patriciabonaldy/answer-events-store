@@ -2,13 +2,16 @@ package bootstrap
 
 import (
 	"context"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub"
+	"strings"
 
-	"github.com/patriciabonaldy/bequest_challenge/cmd/api/bootstrap/handler"
+	"github.com/patriciabonaldy/big_queue/pkg/kafka"
+
+	"github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
 	"github.com/patriciabonaldy/bequest_challenge/internal/business"
+	"github.com/patriciabonaldy/bequest_challenge/internal/config"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/mongo"
-
-	"github.com/patriciabonaldy/bequest_challenge/internal/config"
 )
 
 func Run() error {
@@ -24,7 +27,9 @@ func Run() error {
 		panic(err)
 	}
 
-	svc := business.NewService(storage, log)
+	publisher := kafka.NewPublisher(strings.Split(cfg.Kafka.Broker, ","), cfg.Kafka.Topic)
+	producer := pubsub.NewProducer(publisher)
+	svc := business.NewService(producer, storage, log)
 	handler := handler.New(svc, log)
 	ctx, srv := New(ctx, cfg, handler)
 

@@ -3,6 +3,7 @@ package business
 import (
 	"context"
 	"encoding/json"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub"
 	"time"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
@@ -32,13 +33,15 @@ type Service interface {
 }
 
 type service struct {
+	producer   pubsub.Producer
 	repository internal.Storage
 	log        logger.Logger
 }
 
 // NewService returns the default Service interface implementation.
-func NewService(repository internal.Storage, log logger.Logger) Service {
+func NewService(producer pubsub.Producer, repository internal.Storage, log logger.Logger) Service {
 	return &service{
+		producer:   producer,
 		repository: repository,
 		log:        log,
 	}
@@ -54,13 +57,32 @@ func (s service) CreateAnswer(ctx context.Context, data map[string]string) (*int
 
 	event := internal.NewEvent("", internal.Create, body)
 	answer := internal.NewAnswer(event)
-	err = s.repository.Save(ctx, answer)
+	message := generateMessage(answer)
+	err = s.producer.Produce(ctx, message)
 	if err != nil {
-		s.log.Errorf("error CreateAnswer %s", err.Error())
 		return nil, err
 	}
 
 	return &answer, nil
+}
+
+func generateMessage(answer internal.Answer) pubsub.Message {
+	message := pubsub.NewSystemMessage()
+	message.ID = answer.ID
+	message.CreateAt = answer.CreateAt
+	message.UpdateAt = answer.UpdateAt
+
+	for _, ev := range answer.Events {
+		message.Events = append(message.Events, pubsub.Event{
+			EventID:   ev.EventID,
+			Type:      string(ev.Type),
+			RawData:   ev.RawData,
+			Timestamp: ev.Timestamp,
+			Version:   ev.Version,
+		})
+	}
+
+	return message
 }
 
 func (s service) GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error) {
@@ -97,9 +119,10 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 	event := internal.NewEvent("", internal.EventType(eventType), body)
 	answer.AddEvent(event)
 	answer.UpdateAt = time.Now()
-	err = s.repository.Update(ctx, answer)
+
+	message := generateMessage(answer)
+	err = s.producer.Produce(ctx, message)
 	if err != nil {
-		s.log.Errorf("error UpdateAnswer ID:%s:%s", err.Error())
 		return err
 	}
 

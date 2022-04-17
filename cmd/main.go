@@ -1,9 +1,8 @@
 package main
 
 import (
+	"github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap"
 	"log"
-
-	"github.com/patriciabonaldy/bequest_challenge/cmd/api/bootstrap"
 )
 
 // @title API document title
@@ -17,4 +16,5 @@ func main() {
 	if err := bootstrap.Run(); err != nil {
 		log.Fatal(err)
 	}
+
 }

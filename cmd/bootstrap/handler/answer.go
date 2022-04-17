@@ -62,13 +62,7 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 				}
 			}
 
-			resp, err := toResponse(ans)
-			if err != nil {
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
-
-			ctx.JSON(http.StatusCreated, resp)
+			ctx.JSON(http.StatusCreated, ans.ID)
 			return
 		}
 
