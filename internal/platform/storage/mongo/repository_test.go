@@ -3,13 +3,13 @@ package mongo
 import (
 	"context"
 	"fmt"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"log"
 	"os"
 	"reflect"
 	"testing"
 
-	"github.com/google/uuid"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
+
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"github.com/stretchr/testify/assert"
@@ -112,7 +112,7 @@ func TestRepository_Update(t *testing.T) {
 				got, err := repo.GetByID(ctx, answer.ID)
 				require.NoError(t, err)
 
-				assert.Equal(t, answer, got)
+				assert.Equal(t, len(answer.Events), len(got.Events))
 			}
 		})
 	}
@@ -127,14 +127,6 @@ func mockAnswer() internal.Answer {
 
 func mockEvent(event string) internal.Event {
 	return internal.NewEvent("", internal.EventType(event), []byte("{}"))
-}
-
-func mockEventDB(t *testing.T) EventDB {
-	id, _ := uuid.NewUUID()
-	evn, err := NewEvent(id.String(), "create", []byte("{}"), 0)
-	require.NoError(t, err)
-
-	return evn
 }
 
 func mongoContainer() (*dockertest.Pool, *dockertest.Resource) {

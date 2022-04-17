@@ -44,7 +44,7 @@ type historyResponse struct {
 type event struct {
 	EventID   string            `json:"event_id"`
 	Type      string            `json:"event_type"`
-	Data      map[string]string `json:"data""`
+	Data      map[string]string `json:"data"`
 	Timestamp time.Time         `timestamp:"createdAt"`
 	Version   int               `json:"version"`
 }

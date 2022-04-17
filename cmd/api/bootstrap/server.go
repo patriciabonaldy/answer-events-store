@@ -3,14 +3,15 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	"github.com/gin-contrib/cors"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	"github.com/gin-contrib/cors"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	"github.com/patriciabonaldy/bequest_challenge/cmd/api/docs"
 

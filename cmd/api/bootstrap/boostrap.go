@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	"context"
+
 	"github.com/patriciabonaldy/bequest_challenge/cmd/api/bootstrap/handler"
 	"github.com/patriciabonaldy/bequest_challenge/internal/business"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"

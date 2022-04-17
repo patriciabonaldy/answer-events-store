@@ -2,11 +2,12 @@ package handler
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/business"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
-	"net/http"
 )
 
 type AnswerHandler struct {

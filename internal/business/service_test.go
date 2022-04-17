@@ -2,14 +2,15 @@ package business
 
 import (
 	"context"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/storagemocks"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/mock"
-	"reflect"
-	"testing"
-	"time"
 )
 
 func Test_service_CreateAnswer(t *testing.T) {
@@ -201,7 +202,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 					Return(mockA, nil)
 
 				repoMock.On("Update", mock.Anything, mock.Anything).
-					Return(internal.Answer{}, errors.New("something unexpected happened"))
+					Return(errors.New("something unexpected happened"))
 
 				return repoMock
 
@@ -224,7 +225,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 					Return(mockA, nil)
 
 				repoMock.On("Update", mock.Anything, mock.Anything).
-					Return(mockA, nil)
+					Return(nil)
 
 				return repoMock
 
@@ -234,7 +235,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			s := NewService(tt.repo(), logger.New())
-			if _, err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
+			if err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})

@@ -3,8 +3,9 @@ package business
 import (
 	"context"
 	"encoding/json"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"time"
+
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 )

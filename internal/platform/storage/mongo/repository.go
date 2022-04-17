@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"github.com/pkg/errors"
 
