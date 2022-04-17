@@ -10,21 +10,13 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {
-            "name": "API supporter",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "license(Mandatory)",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/answer": {
+        "/answers": {
             "post": {
                 "description": "if ID params is not empty will update the record other cases will create a new answer",
                 "consumes": [
@@ -34,7 +26,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "answer"
+                    "answers"
                 ],
                 "summary": "Create an event",
                 "parameters": [
@@ -76,7 +68,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/answer/{id}": {
+        "/answers/{id}": {
             "get": {
                 "description": "get event by ID",
                 "consumes": [
@@ -86,7 +78,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Show an event",
                 "parameters": [
@@ -127,7 +119,7 @@ const docTemplate = `{
                     "text/plain"
                 ],
                 "tags": [
-                    "answer"
+                    "answers"
                 ],
                 "summary": "Update an event",
                 "parameters": [
@@ -178,7 +170,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Delete an event",
                 "parameters": [
@@ -212,7 +204,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/answer/{id}/history": {
+        "/answers/{id}/history": {
             "get": {
                 "description": "get history of event by ID",
                 "consumes": [
@@ -222,7 +214,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Show a history event",
                 "parameters": [
@@ -369,7 +361,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "version(1.0)",
-	Host:             "localhost:8080",
+	Host:             "0.0.0.0:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "API document title",

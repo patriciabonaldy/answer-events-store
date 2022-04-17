@@ -11,13 +11,6 @@ import (
 // @description Description of specifications
 // @Precautions when using termsOfService specifications
 
-// @contact.name API supporter
-// @contact.url http://www.swagger.io/support
-// @contact.email support@swagger.io
-
-// @license.name license(Mandatory)
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
-
 // @host 0.0.0.0:8080
 // @BasePath /
 func main() {

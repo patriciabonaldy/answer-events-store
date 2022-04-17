@@ -3,21 +3,13 @@
     "info": {
         "description": "Description of specifications",
         "title": "API document title",
-        "contact": {
-            "name": "API supporter",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
-        },
-        "license": {
-            "name": "license(Mandatory)",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
-        },
+        "contact": {},
         "version": "version(1.0)"
     },
-    "host": "localhost:8080",
+    "host": "0.0.0.0:8080",
     "basePath": "/",
     "paths": {
-        "/answer": {
+        "/answers": {
             "post": {
                 "description": "if ID params is not empty will update the record other cases will create a new answer",
                 "consumes": [
@@ -27,7 +19,7 @@
                     "text/plain"
                 ],
                 "tags": [
-                    "answer"
+                    "answers"
                 ],
                 "summary": "Create an event",
                 "parameters": [
@@ -69,7 +61,7 @@
                 }
             }
         },
-        "/answer/{id}": {
+        "/answers/{id}": {
             "get": {
                 "description": "get event by ID",
                 "consumes": [
@@ -79,7 +71,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Show an event",
                 "parameters": [
@@ -120,7 +112,7 @@
                     "text/plain"
                 ],
                 "tags": [
-                    "answer"
+                    "answers"
                 ],
                 "summary": "Update an event",
                 "parameters": [
@@ -171,7 +163,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Delete an event",
                 "parameters": [
@@ -205,7 +197,7 @@
                 }
             }
         },
-        "/answer/{id}/history": {
+        "/answers/{id}/history": {
             "get": {
                 "description": "get history of event by ID",
                 "consumes": [
@@ -215,7 +207,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "answers"
                 ],
                 "summary": "Show a history event",
                 "parameters": [

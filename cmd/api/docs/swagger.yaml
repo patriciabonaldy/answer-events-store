@@ -51,20 +51,14 @@ definitions:
         description: type of event
         type: string
     type: object
-host: localhost:8080
+host: 0.0.0.0:8080
 info:
-  contact:
-    email: support@swagger.io
-    name: API supporter
-    url: http://www.swagger.io/support
+  contact: {}
   description: Description of specifications
-  license:
-    name: license(Mandatory)
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: API document title
   version: version(1.0)
 paths:
-  /answer:
+  /answers:
     post:
       consumes:
       - application/json
@@ -98,8 +92,8 @@ paths:
             type: string
       summary: Create an event
       tags:
-      - answer
-  /answer/{id}:
+      - answers
+  /answers/{id}:
     delete:
       consumes:
       - application/json
@@ -127,7 +121,7 @@ paths:
             type: string
       summary: Delete an event
       tags:
-      - accounts
+      - answers
     get:
       consumes:
       - application/json
@@ -155,7 +149,7 @@ paths:
             $ref: '#/definitions/handler.Response'
       summary: Show an event
       tags:
-      - accounts
+      - answers
     put:
       consumes:
       - application/json
@@ -188,8 +182,8 @@ paths:
             type: string
       summary: Update an event
       tags:
-      - answer
-  /answer/{id}/history:
+      - answers
+  /answers/{id}/history:
     get:
       consumes:
       - application/json
@@ -217,7 +211,7 @@ paths:
             $ref: '#/definitions/handler.Response'
       summary: Show a history event
       tags:
-      - accounts
+      - answers
   /health:
     get:
       consumes:
