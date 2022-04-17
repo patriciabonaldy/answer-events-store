@@ -173,6 +173,16 @@ func TestHandler_GetHistory(t *testing.T) {
 
 func TestHandler_Create(t *testing.T) {
 	repositoryMock := new(storagemocks.Storage)
+	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+		Return(internal.Answer{}, internal.ErrAnswerNotFound).Once()
+
+	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+		Return(mockAnswer(), nil).Once()
+
+	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
+	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+		Return(mockAnswer(), nil).Once()
 	repositoryMock.On("Save", mock.Anything, mock.Anything).
 		Return(nil)
 	log := logger.New()
@@ -187,6 +197,52 @@ func TestHandler_Create(t *testing.T) {
 		createReq := CreateRequest{}
 
 		b, err := json.Marshal(createReq)
+		require.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodPost, "/answer", bytes.NewBuffer(b))
+		require.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	})
+
+	t.Run("given an invalid id it returns 400", func(t *testing.T) {
+		createReq := CreateRequest{
+			ID: "string",
+			Data: map[string]string{
+				"key": "value",
+			},
+		}
+
+		b, err := json.Marshal(createReq)
+		require.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodPost, "/answer", bytes.NewBuffer(b))
+		require.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode)
+	})
+
+	t.Run("given a invalid previous state (delete) it returns 400", func(t *testing.T) {
+		createCustomerReq := CreateRequest{
+			ID: "b47915e6-bd66-11ec-aaa8-acde48001122",
+			Data: map[string]string{
+				"key": "value",
+			},
+		}
+
+		b, err := json.Marshal(createCustomerReq)
 		require.NoError(t, err)
 
 		req, err := http.NewRequest(http.MethodPost, "/answer", bytes.NewBuffer(b))

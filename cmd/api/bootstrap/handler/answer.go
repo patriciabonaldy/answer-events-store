@@ -78,6 +78,7 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 			case internal.ErrInvalidEvent,
 				internal.ErrInvalidEventStatus,
 				internal.ErrIDIsEmpty,
+				internal.ErrAnswerNotFound,
 				internal.ErrInvalidData:
 				ctx.JSON(http.StatusBadRequest, err.Error())
 				return
