@@ -6,6 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub/pubsubMock"
+
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/storagemocks"
@@ -15,18 +18,23 @@ import (
 
 func Test_service_CreateAnswer(t *testing.T) {
 	tests := []struct {
-		name    string
-		repo    func() internal.Storage
-		data    map[string]string
-		wantErr bool
+		name     string
+		producer func() pubsub.Producer
+		repo     func() internal.Storage
+		data     map[string]string
+		wantErr  bool
 	}{
 		{
 			name: "error creating a new event",
-			repo: func() internal.Storage {
-				repoMock := new(storagemocks.Storage)
-				repoMock.On("Save", mock.Anything, mock.Anything).
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
 					Return(errors.New("something unexpected happened"))
 
+				return productMock
+			},
+			repo: func() internal.Storage {
+				repoMock := new(storagemocks.Storage)
 				return repoMock
 
 			},
@@ -34,6 +42,13 @@ func Test_service_CreateAnswer(t *testing.T) {
 		},
 		{
 			name: "success",
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(nil)
+
+				return productMock
+			},
 			repo: func() internal.Storage {
 				repoMock := new(storagemocks.Storage)
 				repoMock.On("Save", mock.Anything, mock.Anything).
@@ -50,7 +65,7 @@ func Test_service_CreateAnswer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := tt.repo()
-			s := NewService(nil, repo, logger.New())
+			s := NewService(tt.producer(), repo, logger.New())
 			if _, err := s.CreateAnswer(context.Background(), tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("CreateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -126,6 +141,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 		eventID   string
 		eventType string
 		data      map[string]string
+		producer  func() pubsub.Producer
 		repo      func() internal.Storage
 		wantErr   bool
 	}{
@@ -135,6 +151,13 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			eventType: "update",
 			data: map[string]string{
 				"key": "9999",
+			},
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(nil)
+
+				return productMock
 			},
 			repo: func() internal.Storage {
 				repoMock := new(storagemocks.Storage)
@@ -152,6 +175,13 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			eventType: "create",
 			data: map[string]string{
 				"key": "9999",
+			},
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(nil)
+
+				return productMock
 			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
@@ -172,6 +202,13 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			eventType: "create",
 			data: map[string]string{
 				"key": "9999",
+			},
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(nil)
+
+				return productMock
 			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
@@ -193,6 +230,13 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			data: map[string]string{
 				"key": "9999",
 			},
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(errors.New("something unexpected happened"))
+
+				return productMock
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -200,9 +244,6 @@ func Test_service_UpdateAnswer(t *testing.T) {
 				repoMock := new(storagemocks.Storage)
 				repoMock.On("GetByID", mock.Anything, mock.Anything).
 					Return(mockA, nil)
-
-				repoMock.On("Update", mock.Anything, mock.Anything).
-					Return(errors.New("something unexpected happened"))
 
 				return repoMock
 
@@ -216,6 +257,13 @@ func Test_service_UpdateAnswer(t *testing.T) {
 			data: map[string]string{
 				"key": "9999",
 			},
+			producer: func() pubsub.Producer {
+				productMock := new(pubsubMock.Producer)
+				productMock.On("Produce", mock.Anything, mock.Anything).
+					Return(nil)
+
+				return productMock
+			},
 			repo: func() internal.Storage {
 				mockA := mockAnswer()
 				mockA.AddEvent(mockEvent("update"))
@@ -224,9 +272,6 @@ func Test_service_UpdateAnswer(t *testing.T) {
 				repoMock.On("GetByID", mock.Anything, mock.Anything).
 					Return(mockA, nil)
 
-				repoMock.On("Update", mock.Anything, mock.Anything).
-					Return(nil)
-
 				return repoMock
 
 			},
@@ -234,7 +279,7 @@ func Test_service_UpdateAnswer(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := NewService(nil, tt.repo(), logger.New())
+			s := NewService(tt.producer(), tt.repo(), logger.New())
 			if err := s.UpdateAnswer(context.Background(), tt.eventID, tt.eventType, tt.data); (err != nil) != tt.wantErr {
 				t.Errorf("UpdateAnswer() error = %v, wantErr %v", err, tt.wantErr)
 			}

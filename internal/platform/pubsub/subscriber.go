@@ -17,6 +17,8 @@ type Subscriber interface {
 	Subscriber(ctx context.Context, callback func(ctx context.Context, message interface{}) error) error
 }
 
+//go:generate mockery --case=snake --outpkg=pubsubMock --output=pubsubMock --name=Subscriber
+
 func NewSubscriber(consumer pkg.Consumer, log logger.Logger) Subscriber {
 	p := subscriber{
 		consumer: consumer,
@@ -38,7 +40,10 @@ func (s subscriber) Subscriber(ctx context.Context, callback func(ctx context.Co
 		select {
 		case m := <-chMsg:
 			log.Println(m)
-			callback(ctx, m)
+			err := callback(ctx, m)
+			if err != nil {
+				log.Println(err)
+			}
 		case err := <-chErr:
 			log.Println(err)
 		}

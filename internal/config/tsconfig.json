@@ -6,7 +6,7 @@
     "db_name": "admin",
     "db_user": "root",
     "db_pass": "rootpassword",
-    "db_dsn": "mongodb://mongo:mongo@0.0.0.0:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
+    "db_dsn": "mongodb://mongo:mongo@bequestDB:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
   },
   "kafka": {
     "broker": "localhost:19092,localhost:29092,localhost:39092",

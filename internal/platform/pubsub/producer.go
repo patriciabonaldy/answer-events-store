@@ -15,6 +15,8 @@ type Producer interface {
 	Produce(ctx context.Context, event interface{}) error
 }
 
+//go:generate mockery --case=snake --outpkg=pubsubMock --output=pubsubMock --name=Producer
+
 func NewProducer(publisher pkg.Publisher) Producer {
 	p := producer{
 		publisher: publisher,

@@ -3,8 +3,9 @@ package business
 import (
 	"context"
 	"encoding/json"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub"
 	"time"
+
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub"
 
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
 
@@ -57,8 +58,8 @@ func (s service) CreateAnswer(ctx context.Context, data map[string]string) (*int
 
 	event := internal.NewEvent("", internal.Create, body)
 	answer := internal.NewAnswer(event)
-	message := generateMessage(answer)
-	err = s.producer.Produce(ctx, message)
+	m := generateMessage(answer)
+	err = s.producer.Produce(ctx, m)
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +121,8 @@ func (s service) UpdateAnswer(ctx context.Context, eventID, eventType string, da
 	answer.AddEvent(event)
 	answer.UpdateAt = time.Now()
 
-	message := generateMessage(answer)
-	err = s.producer.Produce(ctx, message)
+	m := generateMessage(answer)
+	err = s.producer.Produce(ctx, m)
 	if err != nil {
 		return err
 	}

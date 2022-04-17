@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub/pubsubMock"
+
 	"github.com/patriciabonaldy/bequest_challenge/internal"
 	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/storagemocks"
 	"github.com/pkg/errors"
@@ -183,10 +185,13 @@ func TestHandler_Create(t *testing.T) {
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
-	repositoryMock.On("Save", mock.Anything, mock.Anything).
+
+	productMock := new(pubsubMock.Producer)
+	productMock.On("Produce", mock.Anything, mock.Anything).
 		Return(nil)
+
 	log := logger.New()
-	svc := business.NewService(nil, repositoryMock, log)
+	svc := business.NewService(productMock, repositoryMock, log)
 	handler := New(svc, log)
 
 	gin.SetMode(gin.TestMode)
@@ -285,12 +290,16 @@ func TestHandler_Update(t *testing.T) {
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
-		Return(mockAnswer(), nil).Once()
+		Return(mockAnswer(), nil)
 
-	repositoryMock.On("Update", mock.Anything, mock.Anything).
+	productMock := new(pubsubMock.Producer)
+	productMock.On("Produce", mock.Anything, mock.Anything).
+		Return(errors.New("something unexpected happened")).Once()
+	productMock.On("Produce", mock.Anything, mock.Anything).
 		Return(nil)
+
 	log := logger.New()
-	svc := business.NewService(nil, repositoryMock, log)
+	svc := business.NewService(productMock, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
@@ -368,6 +377,29 @@ func TestHandler_Update(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	})
 
+	t.Run("given a error publishing it returns 500", func(t *testing.T) {
+		createReq := Request{
+			Event: "update",
+			Data: map[string]string{
+				"key": "value",
+			},
+		}
+
+		b, err := json.Marshal(createReq)
+		require.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodPut, "/answers/b47915e6-bd66-11ec-aaa8-acde48001122", bytes.NewBuffer(b))
+		require.NoError(t, err)
+
+		rec := httptest.NewRecorder()
+		r.ServeHTTP(rec, req)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
+	})
+
 	t.Run("given a valid request it returns 200", func(t *testing.T) {
 		createReq := Request{
 			Event: "update",
@@ -399,10 +431,12 @@ func TestHandler_Delete(t *testing.T) {
 	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
 
-	repositoryMock.On("Update", mock.Anything, mock.Anything).
+	productMock := new(pubsubMock.Producer)
+	productMock.On("Produce", mock.Anything, mock.Anything).
 		Return(nil)
+
 	log := logger.New()
-	svc := business.NewService(nil, repositoryMock, log)
+	svc := business.NewService(productMock, repositoryMock, log)
 	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()

@@ -3,13 +3,14 @@ package bootstrap
 import (
 	"context"
 	"fmt"
-	handler2 "github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
-	"github.com/patriciabonaldy/bequest_challenge/cmd/docs"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
+
+	handler2 "github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/docs"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
