@@ -59,7 +59,7 @@ build-docker:
 	@docker build --force-rm -t $(APP_NAME):$(VERSION) .
 	@docker tag $(APP_NAME):$(VERSION) $(APP_NAME):latest
 
-crate_topics:
+create_topics:
 	docker exec -it broker kafka-topics --zookeeper zookeeper:2181 --create --topic answers --partitions 1 --replication-factor 1
 
 setup: all build-docker
