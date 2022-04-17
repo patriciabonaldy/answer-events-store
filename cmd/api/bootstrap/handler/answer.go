@@ -25,7 +25,7 @@ func New(service business.Service, log logger.Logger) AnswerHandler {
 // Create godoc
 // @Summary      Create an event
 // @Description  if ID params is not empty will update the record other cases will create a new answer
-// @Tags         answer
+// @Tags         answers
 // @Accept       json
 // @Produce      plain
 // @Param        message  body  CreateRequest  true  "Request"
@@ -33,7 +33,7 @@ func New(service business.Service, log logger.Logger) AnswerHandler {
 // @Success      201  {string}  string         "success"
 // @Failure      400  {string}  string         "bad Request"
 // @Failure      500  {string}  string         "fail"
-// @Router       /answer [post]
+// @Router       /answers [post]
 func (a *AnswerHandler) Create() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req CreateRequest
@@ -51,7 +51,8 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 				case internal.ErrInvalidEvent,
 					internal.ErrInvalidEventStatus,
 					internal.ErrIDIsEmpty,
-					internal.ErrInvalidData:
+					internal.ErrInvalidData,
+					internal.ErrAnswerNotFound:
 					ctx.JSON(http.StatusBadRequest, err.Error())
 					return
 
@@ -90,18 +91,18 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 	}
 }
 
-// Get godoc
+// GetAnswer godoc
 // @Summary      Show an event
 // @Description  get event by ID
-// @Tags         accounts
+// @Tags         answers
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "ID"
 // @Success      200  {object}  Response
 // @Failure      400  {object}  Response
 // @Failure      500  {object}  Response
-// @Router       /answer/{id} [get]
-func (a *AnswerHandler) Get() gin.HandlerFunc {
+// @Router       /answers/{id} [get]
+func (a *AnswerHandler) GetAnswer() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req requestID
 		if err := ctx.ShouldBindUri(&req); err != nil {
@@ -139,14 +140,14 @@ func (a *AnswerHandler) Get() gin.HandlerFunc {
 // GetHistory godoc
 // @Summary      Show a history event
 // @Description  get history of event by ID
-// @Tags         accounts
+// @Tags         answers
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "ID"
 // @Success      200  {object}  Response
 // @Failure      400  {object}  Response
 // @Failure      500  {object}  Response
-// @Router       /answer/{id}/history [get]
+// @Router       /answers/{id}/history [get]
 func (a *AnswerHandler) GetHistory() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req requestID
@@ -186,7 +187,7 @@ func (a *AnswerHandler) GetHistory() gin.HandlerFunc {
 // Update godoc
 // @Summary      Update an event
 // @Description
-// @Tags         answer
+// @Tags         answers
 // @Accept       json
 // @Produce      plain
 // @Param        id   path      string  true  "ID"
@@ -194,7 +195,7 @@ func (a *AnswerHandler) GetHistory() gin.HandlerFunc {
 // @Success      200  {string}  string         "success"
 // @Failure      400  {string}  string         "bad Request"
 // @Failure      500  {string}  string         "fail"
-// @Router       /answer/{id} [put]
+// @Router       /answers/{id} [put]
 func (a *AnswerHandler) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var reqID requestID
@@ -220,7 +221,8 @@ func (a *AnswerHandler) Update() gin.HandlerFunc {
 			case internal.ErrInvalidEvent,
 				internal.ErrInvalidEventStatus,
 				internal.ErrIDIsEmpty,
-				internal.ErrInvalidData:
+				internal.ErrInvalidData,
+				internal.ErrAnswerNotFound:
 				ctx.JSON(http.StatusBadRequest, err.Error())
 				return
 
@@ -238,26 +240,37 @@ func (a *AnswerHandler) Update() gin.HandlerFunc {
 // Delete godoc
 // @Summary      Delete an event
 // @Description  delete event by ID
-// @Tags         accounts
+// @Tags         answers
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "ID"
 // @Success      200  {string}  string         "success"
 // @Failure      400  {string}  string         "bad Request"
 // @Failure      500  {string}  string         "fail"
-// @Router       /answer/{id} [delete]
+// @Router       /answers/{id} [delete]
 func (a *AnswerHandler) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id := ctx.Param("id")
-		if id == "" {
+		if id == "" || id == "0" {
 			ctx.Status(http.StatusBadRequest)
 			return
 		}
 
 		err := a.service.UpdateAnswer(ctx, id, "delete", nil)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, err.Error())
-			return
+			switch err {
+			case internal.ErrInvalidEvent,
+				internal.ErrInvalidEventStatus,
+				internal.ErrIDIsEmpty,
+				internal.ErrInvalidData,
+				internal.ErrAnswerNotFound:
+				ctx.JSON(http.StatusBadRequest, err.Error())
+				return
+
+			default:
+				ctx.JSON(http.StatusInternalServerError, err.Error())
+				return
+			}
 		}
 
 		ctx.Status(http.StatusOK)

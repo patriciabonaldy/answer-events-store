@@ -59,9 +59,9 @@ func Middleware() gin.HandlerFunc {
 func (s *Server) registerRoutes() {
 	s.engine.Use(Middleware())
 	s.engine.GET("/health", handler.CheckHandler())
-	answer := s.engine.Group("/answer")
+	answer := s.engine.Group("/answers")
 	{
-		answer.GET("/:id", s.handler.Get())
+		answer.GET("/:id", s.handler.GetAnswer())
 		answer.GET("/:id/history", s.handler.GetHistory())
 		answer.POST("", s.handler.Create())
 		answer.PUT("/:id", s.handler.Update())
