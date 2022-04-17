@@ -60,4 +60,4 @@ build-docker:
 	@docker tag $(APP_NAME):$(VERSION) $(APP_NAME):latest
 
 setup: all build-docker
-	@docker-compose up
+	@docker-compose down && docker-compose up

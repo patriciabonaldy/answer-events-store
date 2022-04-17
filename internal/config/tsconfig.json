@@ -10,7 +10,7 @@
   },
   "kafka": {
     "broker": "broker:19092,broker:29092,broker:39092",
-    "topic": "answers",
+    "topic": "answers"
   }
 }
 
