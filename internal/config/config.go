@@ -17,7 +17,6 @@ type Database struct {
 type Kafka struct {
 	Broker string `json:"broker"`
 	Topic  string `json:"topic"`
-	Host   string `json:"host"`
 }
 
 type Config struct {

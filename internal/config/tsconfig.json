@@ -9,9 +9,8 @@
     "db_dsn": "mongodb://mongo:mongo@bequestDB:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
   },
   "kafka": {
-    "broker": "localhost:19092,localhost:29092,localhost:39092",
+    "broker": "broker:19092,broker:29092,broker:39092",
     "topic": "answers",
-    "host": "http://localhost:8080"
   }
 }
 
