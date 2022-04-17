@@ -6,13 +6,15 @@ services:
     container_name: api
     restart: on-failure
     depends_on:
-      - zookeeper
       - mongo
       - broker
+      - zookeeper
     ports:
       - "8080:8080"
     volumes:
       - ./db:/home/db
+    networks:
+      - products_network
 
   mongo:
     image: mongo:latest
@@ -24,36 +26,40 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      #- ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
       - mongodb_data_container:/data/db
-
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.0
     container_name: zookeeper
-    restart: on-failure
+    hostname: zookeeper
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - products_network
 
   broker:
     image: confluentinc/cp-kafka:5.5.0
     container_name: broker
-    restart: on-failure
+    hostname: broker
     ports:
-      - "19092:19092"
+      - "9092:9092"
     depends_on:
       - zookeeper
     environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://${DOCKER_HOST_IP:-host.docker.internal}:9092,PLAINTEXT_INTERNAL://broker:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092,CONNECTIONS_FROM_HOST://localhost:19092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONNECTIONS_FROM_HOST:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - products_network
+
 
 volumes:
   mongodb_data_container:
 
 networks:
-  default:
-      name: "bequest-local"
+  products_network:
+    driver: bridge
+

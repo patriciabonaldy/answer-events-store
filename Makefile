@@ -59,5 +59,9 @@ build-docker:
 	@docker build --force-rm -t $(APP_NAME):$(VERSION) .
 	@docker tag $(APP_NAME):$(VERSION) $(APP_NAME):latest
 
+crate_topics:
+	docker exec -it broker kafka-topics --zookeeper zookeeper:2181 --create --topic answers --partitions 1 --replication-factor 1
+
 setup: all build-docker
-	@docker-compose down && docker-compose up
+	@docker-compose -f docker-compose-message-broker.yml down  && docker-compose down
+	@docker-compose -f docker-compose-message-broker.yml up -d && docker-compose up

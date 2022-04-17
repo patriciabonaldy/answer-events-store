@@ -6,10 +6,10 @@
     "db_name": "admin",
     "db_user": "root",
     "db_pass": "rootpassword",
-    "db_dsn": "mongodb://mongo:mongo@bequestDB:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
+    "db_dsn": "mongodb://mongo:mongo@host.docker.internal:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
   },
   "kafka": {
-    "broker": "broker:19092,broker:29092,broker:39092",
+    "broker": "host.docker.internal:9092",
     "topic": "answers"
   }
 }
