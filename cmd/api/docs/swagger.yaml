@@ -1,0 +1,242 @@
+basePath: /
+definitions:
+  handler.CreateRequest:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        description: data is answers list
+        type: object
+      id:
+        description: the id for create a new event
+        type: string
+    required:
+    - data
+    type: object
+  handler.Request:
+    properties:
+      data:
+        additionalProperties:
+          type: string
+        description: data is answers list
+        example:
+          en: Map
+          kk: Карталар
+          ru: Карта
+        type: object
+      event:
+        description: type of event
+        type: string
+    required:
+    - data
+    - event
+    type: object
+  handler.Response:
+    properties:
+      answer_id:
+        description: event id
+        type: string
+      createdAt:
+        type: string
+      data:
+        additionalProperties:
+          type: string
+        description: data is answers list
+        example:
+          en: Map
+          kk: Карталар
+          ru: Карта
+        type: object
+      event:
+        description: type of event
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API supporter
+    url: http://www.swagger.io/support
+  description: Description of specifications
+  license:
+    name: license(Mandatory)
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: API document title
+  version: version(1.0)
+paths:
+  /answer:
+    post:
+      consumes:
+      - application/json
+      description: if ID params is not empty will update the record other cases will
+        create a new answer
+      parameters:
+      - description: Request
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "201":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: bad Request
+          schema:
+            type: string
+        "500":
+          description: fail
+          schema:
+            type: string
+      summary: Create an event
+      tags:
+      - answer
+  /answer/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete event by ID
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: bad Request
+          schema:
+            type: string
+        "500":
+          description: fail
+          schema:
+            type: string
+      summary: Delete an event
+      tags:
+      - accounts
+    get:
+      consumes:
+      - application/json
+      description: get event by ID
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Show an event
+      tags:
+      - accounts
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Request
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/handler.Request'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: success
+          schema:
+            type: string
+        "400":
+          description: bad Request
+          schema:
+            type: string
+        "500":
+          description: fail
+          schema:
+            type: string
+      summary: Update an event
+      tags:
+      - answer
+  /answer/{id}/history:
+    get:
+      consumes:
+      - application/json
+      description: get history of event by ID
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.Response'
+      summary: Show a history event
+      tags:
+      - accounts
+  /health:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: pong
+          schema:
+            type: string
+        "400":
+          description: ok
+          schema:
+            type: string
+        "500":
+          description: ok
+          schema:
+            type: string
+      tags:
+      - CheckHandler
+swagger: "2.0"

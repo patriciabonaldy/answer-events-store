@@ -1,17 +1,21 @@
-package server
+package bootstrap
 
 import (
 	"context"
 	"fmt"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/server/handler"
+	"github.com/gin-contrib/cors"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"github.com/swaggo/gin-swagger/swaggerFiles"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/api/docs"
 
+	"github.com/gin-gonic/gin"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/api/bootstrap/handler"
 	"github.com/patriciabonaldy/bequest_challenge/internal/config"
 )
 
@@ -33,9 +37,23 @@ func New(ctx context.Context, config *config.Config, handler handler.AnswerHandl
 	}
 
 	srv.registerRoutes()
+	srv.setCors()
 	return serverContext(ctx), srv
 }
 
+func (s *Server) setCors() {
+	s.engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		AllowOriginFunc: func(origin string) bool {
+			return origin == "*"
+		},
+		MaxAge: 12 * time.Hour,
+	}))
+}
 func (s *Server) registerRoutes() {
 	s.engine.GET("/health", handler.CheckHandler())
 	answer := s.engine.Group("/answer")
@@ -47,6 +65,15 @@ func (s *Server) registerRoutes() {
 		answer.DELETE("/:id", s.handler.Delete())
 	}
 
+	docs.SwaggerInfo.Title = "Swagger Example API"
+	docs.SwaggerInfo.Description = "Event API Documentation."
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.BasePath = "/"
+	docs.SwaggerInfo.Schemes = []string{"http"}
+
+	// use ginSwagger middleware to serve the API docs
+	s.engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func (s *Server) Run(ctx context.Context) error {
