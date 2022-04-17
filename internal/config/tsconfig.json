@@ -1,11 +1,11 @@
 {
-  "host": "localhost",
+  "host": "0.0.0.0",
   "port": 8080,
   "shutdown_timeout": 10,
   "database": {
     "db_name": "admin",
     "db_user": "root",
     "db_pass": "rootpassword",
-    "db_dsn": "mongodb://mongo:mongo@127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
+    "db_dsn": "mongodb://mongo:mongo@bequestDB:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
   }
 }

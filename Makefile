@@ -4,7 +4,7 @@ PACKAGES = $(shell go list ./...)
 PACKAGES_PATH = $(shell go list -f '{{ .Dir }}' ./...)
 LATEST_DEPENDENCIES = $(shell go list -f '{{if not (or .Main .Indirect)}}{{.Path}}{{end}}' -m all)
 
-APP_NAME=form3
+APP_NAME=bequest
 VERSION := 0.0.1
 
 .PHONY: all
@@ -59,5 +59,5 @@ build-docker:
 	@docker build --force-rm -t $(APP_NAME):$(VERSION) .
 	@docker tag $(APP_NAME):$(VERSION) $(APP_NAME):latest
 
-tests: all build-docker
+setup: all build-docker
 	@docker-compose up

@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
@@ -38,24 +37,27 @@ func New(ctx context.Context, config *config.Config, handler handler.AnswerHandl
 	}
 
 	srv.registerRoutes()
-	srv.setCors()
 	return serverContext(ctx), srv
 }
 
-func (s *Server) setCors() {
-	s.engine.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"Origin"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		AllowOriginFunc: func(origin string) bool {
-			return origin == "*"
-		},
-		MaxAge: 12 * time.Hour,
-	}))
+// Middleware is a gin.HandlerFunc that set CORS
+func Middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	}
 }
 func (s *Server) registerRoutes() {
+	s.engine.Use(Middleware())
 	s.engine.GET("/health", handler.CheckHandler())
 	answer := s.engine.Group("/answer")
 	{
@@ -66,10 +68,10 @@ func (s *Server) registerRoutes() {
 		answer.DELETE("/:id", s.handler.Delete())
 	}
 
-	docs.SwaggerInfo.Title = "Swagger Example API"
+	docs.SwaggerInfo.Title = "Swagger Documentation API"
 	docs.SwaggerInfo.Description = "Event API Documentation."
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.Host = "0.0.0.0:8080"
 	docs.SwaggerInfo.BasePath = "/"
 	docs.SwaggerInfo.Schemes = []string{"http"}
 

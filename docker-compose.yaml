@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api:
-    image: bequest-api:latest
+    image: bequest:latest
     container_name: api
     ports:
       - "8080:8080"
