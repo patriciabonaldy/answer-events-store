@@ -7,13 +7,14 @@ import (
 // swagger:model CreateRequest
 type CreateRequest struct {
 	// the id for create a new event
-	ID string `uri:"id,omitempty"`
+	ID string `uri:"id,omitempty" example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"`
 
 	// data is answers list
 	Data map[string]string `json:"data" binding:"required"`
 }
 
-type requestID struct {
+// swagger:model RequestID
+type RequestID struct {
 	ID string `uri:"id" binding:"required,uuid" example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"`
 }
 
@@ -36,7 +37,8 @@ type Response struct {
 	CreateAt time.Time         `json:"createdAt,omitempty"`
 }
 
-type historyResponse struct {
+// swagger:model HistoryResponse
+type HistoryResponse struct {
 	ID     string  `json:"id"`
 	Events []event `json:"events"`
 }

@@ -142,11 +142,11 @@ func TestHandler_GetHistory(t *testing.T) {
 		res := rec.Result()
 		defer res.Body.Close()
 
-		var resp historyResponse
+		var resp HistoryResponse
 		err = json.NewDecoder(res.Body).Decode(&resp)
 		require.NoError(t, err)
 
-		want := historyResponse{
+		want := HistoryResponse{
 			ID: "b47915e6-bd66-11ec-aaa8-acde48001122",
 			Events: []event{
 				{

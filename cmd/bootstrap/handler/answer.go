@@ -88,7 +88,7 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 
 // GetAnswer godoc
 // @Summary      Show an event
-// @Description  get event by ID
+// @Description  get event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
 // @Tags         answers
 // @Accept       json
 // @Produce      json
@@ -99,7 +99,7 @@ func (a *AnswerHandler) Create() gin.HandlerFunc {
 // @Router       /answers/{id} [get]
 func (a *AnswerHandler) GetAnswer() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req requestID
+		var req RequestID
 		if err := ctx.ShouldBindUri(&req); err != nil {
 			ctx.JSON(400, gin.H{"msg": err.Error()})
 			return
@@ -134,7 +134,7 @@ func (a *AnswerHandler) GetAnswer() gin.HandlerFunc {
 
 // GetHistory godoc
 // @Summary      Show a history event
-// @Description  get history of event by ID
+// @Description  get history of event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
 // @Tags         answers
 // @Accept       json
 // @Produce      json
@@ -145,7 +145,7 @@ func (a *AnswerHandler) GetAnswer() gin.HandlerFunc {
 // @Router       /answers/{id}/history [get]
 func (a *AnswerHandler) GetHistory() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req requestID
+		var req RequestID
 		if err := ctx.ShouldBindUri(&req); err != nil {
 			ctx.JSON(400, gin.H{"msg": err.Error()})
 			return
@@ -193,7 +193,7 @@ func (a *AnswerHandler) GetHistory() gin.HandlerFunc {
 // @Router       /answers/{id} [put]
 func (a *AnswerHandler) Update() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var reqID requestID
+		var reqID RequestID
 		if err := ctx.ShouldBindUri(&reqID); err != nil {
 			ctx.JSON(400, gin.H{"msg": err.Error()})
 			return
@@ -234,14 +234,14 @@ func (a *AnswerHandler) Update() gin.HandlerFunc {
 // Delete returns an HTTP handler for answer creation.
 // Delete godoc
 // @Summary      Delete an event
-// @Description  delete event by ID
+// @Description  delete event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
 // @Tags         answers
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "ID"
-// @Success      200  {string}  string         "success"
-// @Failure      400  {string}  string         "bad Request"
-// @Failure      500  {string}  string         "fail"
+// @Success      200
+// @Failure      400
+// @Failure      500
 // @Router       /answers/{id} [delete]
 func (a *AnswerHandler) Delete() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -289,8 +289,8 @@ func toResponse(answ *internal.Answer) (Response, error) {
 	}, nil
 }
 
-func toHistoryResponse(answ *internal.Answer) (historyResponse, error) {
-	resp := historyResponse{
+func toHistoryResponse(answ *internal.Answer) (HistoryResponse, error) {
+	resp := HistoryResponse{
 		ID:     answ.ID,
 		Events: []event{},
 	}
@@ -300,7 +300,7 @@ func toHistoryResponse(answ *internal.Answer) (historyResponse, error) {
 
 		err := json.Unmarshal(ev.RawData, &data)
 		if err != nil {
-			return historyResponse{}, err
+			return HistoryResponse{}, err
 		}
 
 		resp.Events = append(resp.Events, event{

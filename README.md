@@ -74,4 +74,4 @@ These are detail endpoints
 * [Docker](https://www.docker.com/) - Docker
 * [Docker test](https://github.com/ory/dockertest/) - Docker test
 * [uuid](https://github.com/google/uuid/) - uuid
-* [big_queue](https://github.com/patriciabonaldy/big_queue/) - Library to Publisher/consumer in kafka or sqs
+* [big_queue](https://github.com/patriciabonaldy/big_queue/) - My own library to Publisher/consumer in kafka or sqs

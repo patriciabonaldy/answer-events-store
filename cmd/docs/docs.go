@@ -70,7 +70,7 @@ const docTemplate = `{
         },
         "/answers/{id}": {
             "get": {
-                "description": "get event by ID",
+                "description": "get event by ID example:\"0bfce8da-bdc9-11ec-b9f3-acde48001122\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -162,7 +162,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete event by ID",
+                "description": "delete event by ID example:\"0bfce8da-bdc9-11ec-b9f3-acde48001122\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -184,29 +184,20 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": ""
                     },
                     "400": {
-                        "description": "bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": ""
                     },
                     "500": {
-                        "description": "fail",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": ""
                     }
                 }
             }
         },
         "/answers/{id}/history": {
             "get": {
-                "description": "get history of event by ID",
+                "description": "get history of event by ID example:\"0bfce8da-bdc9-11ec-b9f3-acde48001122\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -298,7 +289,8 @@ const docTemplate = `{
                 },
                 "id": {
                     "description": "the id for create a new event",
-                    "type": "string"
+                    "type": "string",
+                    "example": "0bfce8da-bdc9-11ec-b9f3-acde48001122"
                 }
             }
         },

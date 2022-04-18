@@ -9,6 +9,7 @@ definitions:
         type: object
       id:
         description: the id for create a new event
+        example: 0bfce8da-bdc9-11ec-b9f3-acde48001122
         type: string
     required:
     - data
@@ -97,7 +98,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete event by ID
+      description: delete event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
       parameters:
       - description: ID
         in: path
@@ -108,24 +109,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
-          schema:
-            type: string
+          description: ""
         "400":
-          description: bad Request
-          schema:
-            type: string
+          description: ""
         "500":
-          description: fail
-          schema:
-            type: string
+          description: ""
       summary: Delete an event
       tags:
       - answers
     get:
       consumes:
       - application/json
-      description: get event by ID
+      description: get event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
       parameters:
       - description: ID
         in: path
@@ -187,7 +182,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get history of event by ID
+      description: get history of event by ID example:"0bfce8da-bdc9-11ec-b9f3-acde48001122"
       parameters:
       - description: ID
         in: path
