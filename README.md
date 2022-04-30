@@ -1,4 +1,4 @@
-### Golang Answer events microservice  👋
+### Golang Answer events store microservice  👋
 This application handlers the different states that can have a set of answers for user.
 
 Here, we can use different options to manage the event state can have a group of answers.

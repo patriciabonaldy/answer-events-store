@@ -109,11 +109,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: ""
+          description: OK
+          schema:
+            type: string
         "400":
-          description: ""
+          description: Bad Request
+          schema:
+            type: string
         "500":
-          description: ""
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Delete an event
       tags:
       - answers
