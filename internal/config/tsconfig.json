@@ -4,12 +4,12 @@
   "shutdown_timeout": 10,
   "database": {
     "db_name": "admin",
-    "db_user": "root",
-    "db_pass": "rootpassword",
-    "db_dsn": "mongodb://mongo:mongo@host.docker.internal:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
+    "db_user": "adminuser",
+    "db_pass": "password123",
+    "db_dsn": "mongodb://mongo:mongo@127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
   },
   "kafka": {
-    "broker": "host.docker.internal:9092",
+    "broker": "kafka:9092",
     "topic": "answers"
   }
 }

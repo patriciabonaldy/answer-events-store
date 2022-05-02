@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: answer-event-store
+  labels:
+    app: answer-event-store
+spec:
+  selector:
+    matchLabels:
+      app: answer-event-store
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: "answer-event-store"
+    spec:
+      containers:
+        - name: answer-event-store
+          image: "answer-event-store:latest"
