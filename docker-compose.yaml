@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   api:
-    image: bequest:latest
+    image: answer-event-store:latest
     container_name: api
     restart: on-failure
     depends_on:
@@ -18,7 +18,7 @@ services:
 
   mongo:
     image: mongo:latest
-    container_name: bequestDB
+    container_name: mongoDB
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
@@ -62,4 +62,3 @@ volumes:
 networks:
   products_network:
     driver: bridge
-
