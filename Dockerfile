@@ -12,6 +12,7 @@ RUN chmod +x api
 
 # Building image with the binary
 FROM alpine:latest
+RUN apk add --no-cache bash
 EXPOSE 8080
 WORKDIR /app
 COPY --from=build /go/src/github.com/pbonaldy/bequest_challenge/api /app

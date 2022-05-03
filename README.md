@@ -44,10 +44,6 @@ However, the following should not be allowed:
 ~~~bash
 make setup
 ~~~
-- Create a topic
-~~~bash
-make create_topics
-~~~
 
 ### Testing
 

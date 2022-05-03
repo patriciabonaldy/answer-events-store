@@ -62,5 +62,36 @@ build-docker:
 create_topics:
 	docker exec -it broker kafka-topics --zookeeper zookeeper:2181 --create --topic answers --partitions 1 --replication-factor 1
 
-setup: all build-docker
-	@docker-compose down && docker-compose up
+config-cluster:
+	@kind create cluster --config=k8s/kind-config.yaml
+	@kubectl config use-context kind-kind
+
+config-api:
+	@kind load docker-image  answer-event-store:latest
+	@kubectl apply -f k8s/mongodb
+	@kubectl apply -f k8s/answer
+
+remove-cluster:
+	@kubectl config use-context kind-kind
+	@kubectl delete -f k8s/mongodb
+	@kubectl delete -f k8s/answer
+	@kind delete cluster
+
+config-kafka:
+	@kubectl apply -f k8s/kafka/1-namespace.yaml
+	@helm repo add strimzi https://strimzi.io/charts/ && helm repo update
+	@helm install strimzi strimzi/strimzi-kafka-operator --namespace kafka
+	@kubectl apply -f k8s/kafka/2-kafka.yaml
+	@kubectl wait pod -n kafka cloudflow-strimzi-zookeeper-0 --for condition=Available=True --timeout=60s
+	@kubectl wait pod -n kafka cloudflow-strimzi-kafka-0 --for condition=Available=True --timeout=60s
+
+remove-kafka:
+	@helm delete strimzi -n kafka
+	@kubectl delete -f k8s/kafka
+
+setup: all build-docker config-cluster config-kafka config-api
+
+remove-all: remove-kafka remove-cluster
+
+api-forward:
+	@kubectl port-forward service/answer 8080:8080 -n staging

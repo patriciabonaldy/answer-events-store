@@ -25,19 +25,13 @@ type Repository struct {
 
 // NewDBStorage initializes a mongo-based implementation of Storage.
 func NewDBStorage(ctx context.Context, cfg *config.Database, log logger.Logger) (*Repository, error) {
-	client, err := mongo.NewClient(
-		options.Client().ApplyURI(cfg.URI).
-			SetAuth(options.Credential{Username: cfg.User,
-				Password: cfg.Password}))
+	clientOpts := options.Client().ApplyURI(cfg.URI)
+	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := client.Connect(ctx); err != nil {
-		return nil, err
-	}
-
-	if err := client.Ping(ctx, nil); err != nil {
+	if err = client.Ping(ctx, nil); err != nil {
 		return nil, err
 	}
 
