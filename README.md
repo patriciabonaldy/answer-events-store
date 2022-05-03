@@ -45,6 +45,20 @@ However, the following should not be allowed:
 make setup
 ~~~
 
+### Bind api:
+
+~~~bash
+make api-forward
+~~~
+
+### Remove all:
+
+- Run follow command:
+
+~~~bash
+make remove-all
+~~~
+
 ### Testing
 
 ~~~bash

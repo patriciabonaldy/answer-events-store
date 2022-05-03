@@ -82,7 +82,7 @@ config-kafka:
 	@helm repo add strimzi https://strimzi.io/charts/ && helm repo update
 	@helm install strimzi strimzi/strimzi-kafka-operator --namespace kafka
 	@kubectl apply -f k8s/kafka/2-kafka.yaml
-	@kubectl wait pod -n kafka cloudflow-strimzi-zookeeper-0 --for condition=Available=True --timeout=60s
+	@kubectl wait pod -n kafka cloudflow-strimzi-zookeeper-0 --for condition=Available=True --timeout=90s
 	@kubectl wait pod -n kafka cloudflow-strimzi-kafka-0 --for condition=Available=True --timeout=60s
 
 remove-kafka:
