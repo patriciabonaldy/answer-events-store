@@ -44,9 +44,19 @@ However, the following should not be allowed:
 ~~~bash
 make setup
 ~~~
-- Create a topic
+
+### Bind api:
+
 ~~~bash
-make create_topics
+make api-forward
+~~~
+
+### Remove all:
+
+- Run follow command:
+
+~~~bash
+make remove-all
 ~~~
 
 ### Testing

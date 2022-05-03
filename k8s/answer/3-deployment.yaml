@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: answer
+  namespace: staging
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: answer
+  template:
+    metadata:
+      labels:
+        app: answer
+    spec:
+      containers:
+      - name: answer
+        image: answer-event-store:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: MONGODB_HOSTNAME
+          value: mongodb-0.mongodb-headless.database
+        - name: MONGODB_PORT
+          value: "27017"
+        - name: MONGODB_DATABASE
+          value: inventory
+        - name: MONGODB_USERNAME
+          value: answer
+        - name: MONGODB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: creds
+              key: db-password
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi

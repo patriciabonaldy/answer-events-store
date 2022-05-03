@@ -11,7 +11,7 @@ import (
 // @description Description of specifications
 // @Precautions when using termsOfService specifications
 
-// @host 0.0.0.0:8080
+// @host 0.0.0.0:5000
 // @BasePath /
 func main() {
 	if err := bootstrap.Run(); err != nil {

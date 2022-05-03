@@ -3,13 +3,13 @@
   "port": 8080,
   "shutdown_timeout": 10,
   "database": {
-    "db_name": "admin",
-    "db_user": "adminuser",
+    "db_name": "answerstore",
+    "db_user": "answer",
     "db_pass": "password123",
-    "db_dsn": "mongodb://mongo:mongo@127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb"
+    "db_dsn": "mongodb://answer:password123@mongodb-0.mongodb-headless.database:27017/answerstore"
   },
   "kafka": {
-    "broker": "kafka:9092",
+    "broker": "cloudflow-strimzi-kafka-1.cloudflow-strimzi-kafka-brokers.kafka.svc:9092",
     "topic": "answers"
   }
 }
