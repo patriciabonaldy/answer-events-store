@@ -1,4 +1,7 @@
 ### Golang Answer events store microservice  👋
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f9f5ce9f1b6d45929680d14199dd793e)](https://app.codacy.com/gh/patriciabonaldy/answer-events-store?utm_source=github.com&utm_medium=referral&utm_content=patriciabonaldy/answer-events-store&utm_campaign=Badge_Grade_Settings)
+
 This application handlers the different states that can have a set of answers for user.
 
 Here, we can use different options to manage the event state can have a group of answers.
