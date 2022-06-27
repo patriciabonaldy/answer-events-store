@@ -9,29 +9,30 @@ import (
 	"os/signal"
 	"time"
 
-	handler2 "github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
-	"github.com/patriciabonaldy/bequest_challenge/cmd/docs"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/bootstrap/handler"
 
+	"github.com/gin-gonic/gin"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
-	"github.com/gin-gonic/gin"
+	"github.com/patriciabonaldy/bequest_challenge/cmd/docs"
 	"github.com/patriciabonaldy/bequest_challenge/internal/config"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/command"
 )
 
 type Server struct {
-	httpAddr string
-	engine   *gin.Engine
-	handler  handler2.AnswerHandler
+	httpAddr   string
+	engine     *gin.Engine
+	commandBus command.Bus
 
 	shutdownTimeout time.Duration
 }
 
-func New(ctx context.Context, config *config.Config, handler handler2.AnswerHandler) (context.Context, Server) {
+func New(ctx context.Context, config *config.Config, commandBus command.Bus) (context.Context, Server) {
 	srv := Server{
-		engine:   gin.New(),
-		httpAddr: fmt.Sprintf("%s:%d", config.Host, config.Port),
-		handler:  handler,
+		engine:     gin.New(),
+		httpAddr:   fmt.Sprintf("%s:%d", config.Host, config.Port),
+		commandBus: commandBus,
 
 		shutdownTimeout: time.Duration(config.ShutdownTimeout) + time.Second,
 	}
@@ -58,14 +59,14 @@ func Middleware() gin.HandlerFunc {
 }
 func (s *Server) registerRoutes() {
 	s.engine.Use(Middleware())
-	s.engine.GET("/health", handler2.CheckHandler())
+	s.engine.GET("/health", handler.CheckHandler())
 	answer := s.engine.Group("/answers")
 	{
-		answer.GET("/:id", s.handler.GetAnswer())
-		answer.GET("/:id/history", s.handler.GetHistory())
-		answer.POST("", s.handler.Create())
-		answer.PUT("/:id", s.handler.Update())
-		answer.DELETE("/:id", s.handler.Delete())
+		answer.GET("/:id", handler.GetAnswer(s.commandBus))
+		answer.GET("/:id/history", handler.GetHistory(s.commandBus))
+		answer.POST("", handler.Create(s.commandBus))
+		answer.PUT("/:id", handler.Update(s.commandBus))
+		answer.DELETE("/:id", handler.Delete(s.commandBus))
 	}
 
 	docs.SwaggerInfo.Title = "Swagger Documentation API"

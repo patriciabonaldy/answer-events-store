@@ -1,4 +1,4 @@
-package business
+package update
 
 import (
 	"context"
@@ -28,8 +28,6 @@ var (
 )
 
 type Service interface {
-	CreateAnswer(ctx context.Context, data map[string]string) (*internal.Answer, error)
-	GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error)
 	UpdateAnswer(ctx context.Context, eventID, eventType string, data map[string]string) error
 }
 
@@ -46,25 +44,6 @@ func NewService(producer pubsub.Producer, repository internal.Storage, log logge
 		repository: repository,
 		log:        log,
 	}
-}
-
-// CreateAnswer implements Service interface.
-func (s service) CreateAnswer(ctx context.Context, data map[string]string) (*internal.Answer, error) {
-	body, err := json.Marshal(data)
-	if err != nil {
-		s.log.Errorf("error Marshal data %s", err.Error())
-		return nil, err
-	}
-
-	event := internal.NewEvent("", internal.Create, body)
-	answer := internal.NewAnswer(event)
-	m := generateMessage(answer)
-	err = s.producer.Produce(ctx, m)
-	if err != nil {
-		return nil, err
-	}
-
-	return &answer, nil
 }
 
 func generateMessage(answer internal.Answer) pubsub.Message {
@@ -84,16 +63,6 @@ func generateMessage(answer internal.Answer) pubsub.Message {
 	}
 
 	return message
-}
-
-func (s service) GetAnswerByID(ctx context.Context, eventID string) (*internal.Answer, error) {
-	answer, err := s.repository.GetByID(ctx, eventID)
-	if err != nil {
-		s.log.Errorf("error GetAnswerByID ID:%s:%s", eventID, err.Error())
-		return nil, err
-	}
-
-	return &answer, nil
 }
 
 // UpdateAnswer implements Service interface.

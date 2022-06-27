@@ -9,34 +9,28 @@ import (
 	"testing"
 	"time"
 
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/pubsub/pubsubMock"
-
-	"github.com/patriciabonaldy/bequest_challenge/internal"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/storage/storagemocks"
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/gin-gonic/gin"
-	"github.com/patriciabonaldy/bequest_challenge/internal/business"
-	"github.com/patriciabonaldy/bequest_challenge/internal/platform/logger"
-	"github.com/stretchr/testify/assert"
+	"github.com/patriciabonaldy/bequest_challenge/internal"
+	"github.com/patriciabonaldy/bequest_challenge/internal/platform/command/commandmocks"
 )
 
 var timeN = time.Now()
 
 func TestHandler_Get(t *testing.T) {
-	repositoryMock := new(storagemocks.Storage)
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus := new(commandmocks.Bus)
+	commandBus.On("Dispatch", mock.Anything, mock.AnythingOfType("find.AnswerCommand")).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.AnythingOfType("find.AnswerCommand")).
 		Return(mockAnswer(), nil).Once()
-	log := logger.New()
-	svc := business.NewService(nil, repositoryMock, log)
-	handler := New(svc, log)
+
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.GET("/answers/:id", handler.GetAnswer())
+	r.GET("/answers/:id", GetAnswer(commandBus))
 
 	t.Run("given a invalid request it returns 400", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "/answers/0", nil)
@@ -94,17 +88,15 @@ func TestHandler_Get(t *testing.T) {
 }
 
 func TestHandler_GetHistory(t *testing.T) {
-	repositoryMock := new(storagemocks.Storage)
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus := new(commandmocks.Bus)
+	commandBus.On("Dispatch", mock.Anything, mock.AnythingOfType("find.AnswerCommand")).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.AnythingOfType("find.AnswerCommand")).
 		Return(mockAnswer(), nil).Once()
-	log := logger.New()
-	svc := business.NewService(nil, repositoryMock, log)
-	handler := New(svc, log)
+
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.GET("/answers/:id/history", handler.GetHistory())
+	r.GET("/answers/:id/history", GetHistory(commandBus))
 
 	t.Run("given a invalid request it returns 400", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodGet, "/answers/0/history", nil)
@@ -174,29 +166,21 @@ func TestHandler_GetHistory(t *testing.T) {
 }
 
 func TestHandler_Create(t *testing.T) {
-	repositoryMock := new(storagemocks.Storage)
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus := new(commandmocks.Bus)
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(internal.Answer{}, internal.ErrAnswerNotFound).Once()
-
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
+		Return(internal.Answer{}, internal.ErrAnswerNotFound).Once()
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
-
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
-
-	productMock := new(pubsubMock.Producer)
-	productMock.On("Produce", mock.Anything, mock.Anything).
-		Return(nil)
-
-	log := logger.New()
-	svc := business.NewService(productMock, repositoryMock, log)
-	handler := New(svc, log)
 
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.POST("/answer", handler.Create())
+	r.POST("/answer", Create(commandBus))
 
 	t.Run("given an invalid request it returns 400", func(t *testing.T) {
 		createReq := CreateRequest{}
@@ -286,24 +270,19 @@ func TestHandler_Create(t *testing.T) {
 }
 
 func TestHandler_Update(t *testing.T) {
-	repositoryMock := new(storagemocks.Storage)
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus := new(commandmocks.Bus)
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
-		Return(mockAnswer(), nil)
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
+		Return(mockAnswer(), nil).Once()
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
+		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
+		Return(mockAnswer(), nil).Once()
 
-	productMock := new(pubsubMock.Producer)
-	productMock.On("Produce", mock.Anything, mock.Anything).
-		Return(errors.New("something unexpected happened")).Once()
-	productMock.On("Produce", mock.Anything, mock.Anything).
-		Return(nil)
-
-	log := logger.New()
-	svc := business.NewService(productMock, repositoryMock, log)
-	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.PUT("/answers/:id", handler.Update())
+	r.PUT("/answers/:id", Update(commandBus))
 
 	t.Run("given a invalid request it returns 400", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodPut, "/answers/0", nil)
@@ -377,29 +356,6 @@ func TestHandler_Update(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
 	})
 
-	t.Run("given a error publishing it returns 500", func(t *testing.T) {
-		createReq := Request{
-			Event: "update",
-			Data: map[string]string{
-				"key": "value",
-			},
-		}
-
-		b, err := json.Marshal(createReq)
-		require.NoError(t, err)
-
-		req, err := http.NewRequest(http.MethodPut, "/answers/b47915e6-bd66-11ec-aaa8-acde48001122", bytes.NewBuffer(b))
-		require.NoError(t, err)
-
-		rec := httptest.NewRecorder()
-		r.ServeHTTP(rec, req)
-
-		res := rec.Result()
-		defer res.Body.Close()
-
-		assert.Equal(t, http.StatusInternalServerError, res.StatusCode)
-	})
-
 	t.Run("given a valid request it returns 200", func(t *testing.T) {
 		createReq := Request{
 			Event: "update",
@@ -425,22 +381,17 @@ func TestHandler_Update(t *testing.T) {
 }
 
 func TestHandler_Delete(t *testing.T) {
-	repositoryMock := new(storagemocks.Storage)
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus := new(commandmocks.Bus)
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(internal.Answer{}, errors.New("something unexpected happened")).Once()
-	repositoryMock.On("GetByID", mock.Anything, mock.Anything).
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
 		Return(mockAnswer(), nil).Once()
+	commandBus.On("Dispatch", mock.Anything, mock.Anything).
+		Return(mockAnswer(), nil)
 
-	productMock := new(pubsubMock.Producer)
-	productMock.On("Produce", mock.Anything, mock.Anything).
-		Return(nil)
-
-	log := logger.New()
-	svc := business.NewService(productMock, repositoryMock, log)
-	handler := New(svc, log)
 	gin.SetMode(gin.TestMode)
 	r := gin.New()
-	r.DELETE("/answers/:id", handler.Delete())
+	r.DELETE("/answers/:id", Delete(commandBus))
 
 	t.Run("given a invalid request it returns 400", func(t *testing.T) {
 		req, err := http.NewRequest(http.MethodDelete, "/answers/0", nil)
