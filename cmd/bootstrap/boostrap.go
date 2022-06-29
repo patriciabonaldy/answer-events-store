@@ -32,7 +32,7 @@ func Run() error {
 		panic(err)
 	}
 
-	publisher := kafka.NewPublisher(strings.Split(cfg.Kafka.Broker, ","), cfg.Kafka.Topic)
+	publisher := kafka.NewPublisher(strings.Split(cfg.Kafka.Producer, ","), cfg.Kafka.Topic)
 	producer := pubsub.NewProducer(publisher)
 	commandBus := inmemory.NewCommandBus()
 
@@ -53,7 +53,7 @@ func Run() error {
 
 	ctx, srv := New(ctx, cfg, commandBus)
 
-	consumer := kafka.NewConsumer(strings.Split(cfg.Kafka.Broker, ","), cfg.Kafka.Topic)
+	consumer := kafka.NewConsumer(strings.Split(cfg.Kafka.Consumer, ","), cfg.Kafka.Topic)
 	subscriber := pubsub.NewSubscriber(consumer, log)
 	sync := cdc.NewSync(subscriber, storage, log)
 

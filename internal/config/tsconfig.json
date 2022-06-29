@@ -9,7 +9,8 @@
     "db_dsn": "mongodb://answer:password123@mongodb-0.mongodb-headless.database:27017/answerstore"
   },
   "kafka": {
-    "broker": "cloudflow-strimzi-kafka-1.cloudflow-strimzi-kafka-brokers.kafka.svc:9092",
+    "consumer": "kafka.kafka.svc.cluster.local:9092",
+    "producer": "kafka-0.kafka-headless.kafka.svc.cluster.local:9092",
     "topic": "answers"
   }
 }
